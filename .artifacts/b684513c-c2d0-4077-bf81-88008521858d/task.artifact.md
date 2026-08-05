@@ -1,25 +1,12 @@
-- `[x]` Step 1: Project Groundwork & Configuration
-    - `[x]` Add Kotlin support to root and app `build.gradle`
-    - `[x]` Configure Jetpack Compose (Compiler, Material 3, Adaptive)
-    - `[x]` Add Room Database dependencies
-    - `[x]` Add osmdroid dependencies (Maps)
-- `[x]` Step 2: Data Layer (The Foundation)
-    - `[x]` Create Kotlin Data Classes (RealEstateItem, Picture, etc.)
-    - `[x]` Implement Room Entity, DAO, and Database
-    - `[x]` Implement Repository
-    - `[/]` Create Content Provider (wrapper for Room)
-- `[ ]` Step 3: Architecture & Navigation
-    - `[ ]` Set up Navigation 3 for Adaptive Layouts
-    - `[ ]` Create Base ViewModel and UI State patterns
-- `[ ]` Step 4: UI Development (Compose)
-    - `[ ]` Implement Property List Screen (Mobile & Tablet)
-    - `[ ]` Implement Property Detail Screen (with osmdroid map)
-    - `[ ]` Implement Add/Edit Form (Image capture/picking)
-    - `[ ]` Implement Search/Filter Screen
-- `[ ]` Step 5: Features & Logic
-    - `[ ]` Implement Geocoding (Native Geocoder)
-    - `[ ]` Implement Notifications
-    - `[ ]` Implement Offline Sync logic
-- `[ ]` Step 6: Final Verification & Optional Feature
-    - `[ ]` Manual & Automated testing
-    - `[ ]` Implement chosen optional feature
+- `[/]` Step 1: Package Refactoring
+    - `[ ]` Rename directories from `com/openclassrooms` to `com/lieruce`
+    - `[ ]` Update `app/build.gradle`
+    - `[ ]` Update `AndroidManifest.xml`
+    - `[ ]` Update all Java/Kotlin source files (package and imports)
+    - `[ ]` Update layout XML files (tools:context)
+- `[ ]` Step 2: Git Workflow
+    - `[ ]` Create and switch to `develop` branch
+    - `[ ]` Commit all changes
+- `[ ]` Step 3: Verification
+    - `[ ]` Gradle Sync
+    - `[ ]` Build (`assembleDebug`)

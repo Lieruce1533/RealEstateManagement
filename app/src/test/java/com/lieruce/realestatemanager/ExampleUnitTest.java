@@ -1,4 +1,4 @@
-package com.openclassrooms.realestatemanager;
+package com.lieruce.realestatemanager;
 
 import org.junit.Test;
 

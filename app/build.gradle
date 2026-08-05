@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.openclassrooms.realestatemanager'
+    namespace 'com.lieruce.realestatemanager'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.openclassrooms.realestatemanager"
+        applicationId "com.lieruce.realestatemanager"
         minSdk 21
         targetSdk 35
         versionCode 1

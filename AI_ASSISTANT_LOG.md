@@ -17,6 +17,7 @@
     *   Established ground rules for Kotlin and Jetpack Compose education.
     *   Identified **Zero-Cost** solutions for geolocalisation: **osmdroid** (Map) and **Android Native Geocoder**.
     *   Drafted the architecture using **MVVM** and **Room** for offline-first support.
+*   Initialized **Git** repository and created a modern `.gitignore`.
 
 ### Next Steps
 *   User to review the Implementation Plan and select the final optional feature.

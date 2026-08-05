@@ -1,13 +1,13 @@
-package com.openclassrooms.realestatemanager.data
+package com.lieruce.realestatemanager.data
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.openclassrooms.realestatemanager.data.dao.PropertyDao
-import com.openclassrooms.realestatemanager.data.model.PropertyPicture
-import com.openclassrooms.realestatemanager.data.model.RealEstateItem
+import com.lieruce.realestatemanager.data.dao.PropertyDao
+import com.lieruce.realestatemanager.data.model.PropertyPicture
+import com.lieruce.realestatemanager.data.model.RealEstateItem
 
 @Database(
     entities = [RealEstateItem::class, PropertyPicture::class],

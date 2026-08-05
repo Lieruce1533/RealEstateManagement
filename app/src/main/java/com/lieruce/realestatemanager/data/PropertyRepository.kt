@@ -1,9 +1,9 @@
-package com.openclassrooms.realestatemanager.data
+package com.lieruce.realestatemanager.data
 
-import com.openclassrooms.realestatemanager.data.dao.PropertyDao
-import com.openclassrooms.realestatemanager.data.model.PropertyPicture
-import com.openclassrooms.realestatemanager.data.model.PropertyWithPictures
-import com.openclassrooms.realestatemanager.data.model.RealEstateItem
+import com.lieruce.realestatemanager.data.dao.PropertyDao
+import com.lieruce.realestatemanager.data.model.PropertyPicture
+import com.lieruce.realestatemanager.data.model.PropertyWithPictures
+import com.lieruce.realestatemanager.data.model.RealEstateItem
 import kotlinx.coroutines.flow.Flow
 
 class PropertyRepository(private val propertyDao: PropertyDao) {

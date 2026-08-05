@@ -1,7 +1,7 @@
-package com.openclassrooms.realestatemanager.data
+package com.lieruce.realestatemanager.data
 
 import androidx.room.TypeConverter
-import com.openclassrooms.realestatemanager.data.model.PropertyStatus
+import com.lieruce.realestatemanager.data.model.PropertyStatus
 
 class Converters {
     @TypeConverter
