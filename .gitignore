@@ -1,0 +1,38 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# IDE - IntelliJ / Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+/local.properties
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+
+# macOS
+.DS_Store
+
+# Android
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aar
+*.ap_
+
+# Log files
+*.log
+
+# AI Assistant Artifacts (Optional: keep if you want to track history, or ignore if you want them only locally)
+# .artifacts/
+
+# Secrets
+google-services.json
