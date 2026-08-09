@@ -18,6 +18,8 @@
     *   Identified **Zero-Cost** solutions for geolocalisation: **osmdroid** (Map) and **Android Native Geocoder**.
     *   Drafted the architecture using **MVVM** and **Room** for offline-first support.
 *   Initialized **Git** repository and created a modern `.gitignore`.
+*   Renamed package from `com.openclassrooms` to `com.lieruce`.
+*   Created and switched to the `develop` branch.
 
 ### Next Steps
 *   User to review the Implementation Plan and select the final optional feature.

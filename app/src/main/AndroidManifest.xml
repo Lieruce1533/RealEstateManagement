@@ -21,6 +21,11 @@
         </activity>
         <activity android:name="com.lieruce.realestatemanager.SecondActivity"
             android:exported="false"></activity>
+
+        <provider
+            android:name="com.lieruce.realestatemanager.provider.PropertyProvider"
+            android:authorities="com.lieruce.realestatemanager.provider"
+            android:exported="true" />
     </application>
 
 </manifest>

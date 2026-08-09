@@ -1,12 +1,25 @@
-- `[/]` Step 1: Package Refactoring
-    - `[ ]` Rename directories from `com/openclassrooms` to `com/lieruce`
-    - `[ ]` Update `app/build.gradle`
-    - `[ ]` Update `AndroidManifest.xml`
-    - `[ ]` Update all Java/Kotlin source files (package and imports)
-    - `[ ]` Update layout XML files (tools:context)
-- `[ ]` Step 2: Git Workflow
-    - `[ ]` Create and switch to `develop` branch
-    - `[ ]` Commit all changes
-- `[ ]` Step 3: Verification
-    - `[ ]` Gradle Sync
-    - `[ ]` Build (`assembleDebug`)
+- `[x]` Step 1: Package Refactoring
+    - `[x]` Rename directories from `com/openclassrooms` to `com/lieruce`
+    - `[x]` Update `app/build.gradle`
+    - `[x]` Update `AndroidManifest.xml`
+    - `[x]` Update all Java/Kotlin source files (package and imports)
+    - `[x]` Update layout XML files (tools:context)
+- `[x]` Step 2: Git Workflow
+    - `[x]` Create and switch to `develop` branch
+    - `[x]` Commit all changes
+- `[x]` Step 3: Verification
+    - `[x]` Gradle Sync
+    - `[x]` Build (`assembleDebug`)
+- `[x]` Step 4: Data Layer (The Foundation)
+    - `[x]` Create Kotlin Data Classes (RealEstateItem, Picture, etc.)
+    - `[x]` Implement Room Entity, DAO, and Database
+    - `[x]` Implement Repository
+    - `[x]` Create Content Provider (wrapper for Room)
+- `[/]` Step 5: Architecture & Navigation
+    - `[ ]` Set up Navigation 3 for Adaptive Layouts
+    - `[ ]` Create Base ViewModel and UI State patterns
+- `[ ]` Step 6: UI Development (Compose)
+    - `[ ]` Implement Property List Screen (Mobile & Tablet)
+    - `[ ]` Implement Property Detail Screen (with osmdroid map)
+    - `[ ]` Implement Add/Edit Form (Image capture/picking)
+    - `[ ]` Implement Search/Filter Screen
