@@ -51,7 +51,9 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
                 pointsOfInterest = "Park, School",
                 status = PropertyStatus.AVAILABLE,
                 entryDate = System.currentTimeMillis(),
-                agentName = "Agent Smith"
+                agentName = "Agent Smith",
+                latitude = 47.4116,
+                longitude = 0.9850 // Amboise, France
             )
             repository.insertProperty(testProperty, emptyList())
         }

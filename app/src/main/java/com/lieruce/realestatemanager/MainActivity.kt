@@ -12,6 +12,7 @@ import com.lieruce.realestatemanager.ui.navigation.RealEstateNavGraph
 import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModelFactory
+import org.osmdroid.config.Configuration
 
 class MainActivity : ComponentActivity() {
 
@@ -24,6 +25,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // osmdroid configuration
+        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
+        
         enableEdgeToEdge()
         setContent {
             RealEstateManagerTheme {

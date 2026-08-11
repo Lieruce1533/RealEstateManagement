@@ -12,12 +12,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -129,14 +135,27 @@ fun PropertyDetailScreen(
                         modifier = Modifier.padding(top = 4.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    // Map Placeholder
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp)
-                            .background(Color.LightGray, RoundedCornerShape(8.dp)),
-                        contentAlignment = Alignment.Center) {
-                        Text("osmdroid Map Placeholder", color = Color.DarkGray)
+                    
+                    // Real Map Implementation
+                    if (property.latitude != null && property.longitude != null) {
+                        PropertyMap(
+                            latitude = property.latitude,
+                            longitude = property.longitude,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(150.dp)
+                                .background(Color.LightGray, RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No GPS coordinates available", color = Color.DarkGray)
+                        }
                     }
                 }
 
@@ -166,6 +185,41 @@ fun PropertyDetailScreen(
             }
         }
     }
+}
+
+/**
+ * Compose 101: AndroidView (View Interop)
+ * osmdroid is a traditional Android View. To use it in Compose, we use 'AndroidView'.
+ * This acts as a bridge that allows us to host any old-school View inside a Composable function.
+ */
+@Composable
+fun PropertyMap(
+    latitude: Double,
+    longitude: Double,
+    modifier: Modifier = Modifier
+) {
+    AndroidView(
+        factory = { context ->
+            MapView(context).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                controller.setZoom(15.0)
+            }
+        },
+        update = { view ->
+            val point = GeoPoint(latitude, longitude)
+            view.controller.setCenter(point)
+            
+            // Add a marker
+            view.overlays.clear()
+            val marker = Marker(view)
+            marker.position = point
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            view.overlays.add(marker)
+            view.invalidate()
+        },
+        modifier = modifier
+    )
 }
 
 @Composable

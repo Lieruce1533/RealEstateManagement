@@ -25,5 +25,6 @@
 ### Next Steps
 *   Start implementing the visual design for `PropertyListScreen`.
 *   Implement `PropertyViewModel` to connect Room data to the UI.
-*   Implement `PropertyDetailScreen` with placeholders for images and map.
-*   Integrate **osmdroid** into the `PropertyMapScreen`.
+*   Implement `PropertyDetailScreen` with functional **osmdroid** map integration.
+*   Added necessary permissions (Internet, Network State) for map functionality.
+*   Updated `addTestProperty` with GPS coordinates for verification.
