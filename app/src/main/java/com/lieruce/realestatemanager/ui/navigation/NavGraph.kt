@@ -14,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.lieruce.realestatemanager.ui.screens.*
+import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun RealEstateNavGraph(
+    viewModel: PropertyViewModel,
     modifier: Modifier = Modifier,
 ) {
     val backStack = remember { mutableStateListOf<NavKey>(NavKey.PropertyList) }
@@ -42,8 +44,12 @@ fun RealEstateNavGraph(
                     )
                 ) {
                     PropertyListScreen(
+                        viewModel = viewModel,
                         onPropertyClick = { id ->
-                            backStack.add(NavKey.PropertyDetail(id))
+                            // If the key is already in the backstack, we don't add it again (simple logic)
+                            if (backStack.lastOrNull() != NavKey.PropertyDetail(id)) {
+                                backStack.add(NavKey.PropertyDetail(id))
+                            }
                         }
                     )
                 }
@@ -53,7 +59,14 @@ fun RealEstateNavGraph(
                     key = key,
                     metadata = ListDetailSceneStrategy.detailPane()
                 ) {
-                    PropertyDetailScreen(propertyId = key.propertyId)
+                    PropertyDetailScreen(
+                        propertyId = key.propertyId,
+                        viewModel = viewModel,
+                        onBackClick = { backStack.removeAt(backStack.size - 1) },
+                        onEditClick = { id ->
+                            backStack.add(NavKey.AddEditProperty(id))
+                        }
+                    )
                 }
             }
             is NavKey.PropertyMap -> {

@@ -1,18 +1,211 @@
 package com.lieruce.realestatemanager.ui.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lieruce.realestatemanager.data.model.PropertyStatus
+import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PropertyDetailScreen(
     propertyId: Long,
+    viewModel: PropertyViewModel,
+    onBackClick: () -> Unit,
+    onEditClick: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Property Detail Screen for ID: $propertyId (Stub)")
+    // Observe the specific property
+    val propertyWithPictures by viewModel.getProperty(propertyId).collectAsStateWithLifecycle(initialValue = null)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Property Details") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onEditClick(propertyId) }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        val data = propertyWithPictures
+        if (data == null) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            val property = data.property
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    // Photos Placeholder
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .background(Color.LightGray, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Photos Carousel Placeholder", color = Color.DarkGray)
+                    }
+                }
+
+                item {
+                    Column {
+                        Text(
+                            text = property.type,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = NumberFormat.getCurrencyInstance(Locale.US).format(property.priceInDollars),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        InfoChip(label = "Surface", value = "${property.surfaceInSqm} m²")
+                        InfoChip(label = "Rooms", value = "${property.numberOfRooms}")
+                        StatusChip(status = property.status)
+                    }
+                }
+
+                item {
+                    Text(
+                        text = "Description",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = property.description,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
+                item {
+                    Text(
+                        text = "Location",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = property.address,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // Map Placeholder
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .background(Color.LightGray, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center) {
+                        Text("osmdroid Map Placeholder", color = Color.DarkGray)
+                    }
+                }
+
+                item {
+                    Text(
+                        text = "Nearby",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = property.pointsOfInterest,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                item {
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(8.dp))
+                    PropertyMetadataRow(label = "Agent", value = property.agentName)
+                    PropertyMetadataRow(label = "Entry Date", value = formatDate(property.entryDate))
+                    if (property.status == PropertyStatus.SOLD && property.saleDate != null) {
+                        PropertyMetadataRow(label = "Sale Date", value = formatDate(property.saleDate))
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+        }
     }
+}
+
+@Composable
+fun InfoChip(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+        Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun StatusChip(status: PropertyStatus) {
+    val color = if (status == PropertyStatus.AVAILABLE) Color(0xFF4CAF50) else Color.Red
+    Surface(
+        color = color.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color)
+    ) {
+        Text(
+            text = status.name,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            color = color,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun PropertyMetadataRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+    }
+}
+
+fun formatDate(timestamp: Long): String {
+    val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+    return sdf.format(Date(timestamp))
 }
