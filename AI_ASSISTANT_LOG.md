@@ -1,27 +1,28 @@
 # AI Assistant Progress Log
 
-## Date: 2026-08-05
+## Date: 2026-08-11
 
 ### Summary of Work Done
-1.  **Project Modernization**:
+1.  **Project Modernization & Cleanup**:
     *   Updated Gradle to **9.5.0** and Android Gradle Plugin to **9.3.1**.
     *   Migrated the legacy project to **AndroidX**.
-    *   Updated `compileSdk` and `targetSdk` to **35**.
-    *   Fixed build errors related to the removal of `jcenter()`.
-2.  **Bug Fixes**:
-    *   Fixed a crash in `MainActivity.java` (setting an `int` directly to `setText`).
-    *   Fixed an incorrect view ID reference in `MainActivity.java`.
-    *   Updated `AndroidManifest.xml` with `android:exported="true/false"` for Android 12+ compatibility.
-3.  **New Project Planning (Real Estate Manager)**:
-    *   Created a detailed [Implementation Plan](.artifacts/b684513c-c2d0-4077-bf81-88008521858d/implementation_plan.artifact.md).
-    *   Established ground rules for Kotlin and Jetpack Compose education.
-    *   Identified **Zero-Cost** solutions for geolocalisation: **osmdroid** (Map) and **Android Native Geocoder**.
-    *   Drafted the architecture using **MVVM** and **Room** for offline-first support.
-*   Initialized **Git** repository and created a modern `.gitignore`.
-*   Renamed package from `com.openclassrooms` to `com.lieruce`.
-*   Created and switched to the `develop` branch.
+    *   Updated `compileSdk` to **37** and `minSdkVersion` to **23**.
+    *   Cleaned up legacy Java/XML code and implemented modern `MainActivity.kt` with Jetpack Compose.
+    *   Renamed package from `com.openclassrooms` to `com.lieruce`.
+2.  **Git & Infrastructure**:
+    *   Initialized **Git** repository with a modern `.gitignore`.
+    *   Created and switched to the **`develop`** branch.
+    *   Set up type-safe navigation keys and screen stubs.
+3.  **Data Layer**:
+    *   Implemented **Room** database with `RealEstateItem`, `PropertyPicture`, and `PropertyWithPictures`.
+    *   Created **PropertyDao** and **PropertyRepository**.
+    *   Implemented a **Content Provider** (`PropertyProvider`) for external data access.
+4.  **UI & Navigation**:
+    *   Set up **Navigation 3** with an **Adaptive NavGraph** (supports Phone and Tablet side-by-side).
+    *   Created a modern **Material 3 Theme** (`ui/theme`).
+    *   Developed screen stubs for List, Detail, Map, Add/Edit, and Search.
 
 ### Next Steps
-*   User to review the Implementation Plan and select the final optional feature.
-*   Begin environment setup (Kotlin, Compose, and Room dependencies).
-*   Start implementing the Data Layer (Room Entities and DAO).
+*   Start implementing the visual design for `PropertyListScreen`.
+*   Implement `PropertyViewModel` to connect Room data to the UI.
+*   Integrate **osmdroid** into the `PropertyMapScreen`.
