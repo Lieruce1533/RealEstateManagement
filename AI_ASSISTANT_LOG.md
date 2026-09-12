@@ -7,7 +7,9 @@
     *   Reviewed earlier work (Kotlin basics, Room architecture, MVVM, Navigation 3).
     *   Clarified `PropertyProvider` UriMatcher paths and the role of the `/#` wildcard.
     *   Clarified Room database entity relationships between `RealEstateItem` and `PropertyPicture`, foreign keys, and CASCADE deletion.
-    *   Reviewed and aligned with `AGENT_RULES.md` collaboration rules.
+    *   Clarified Navigation 3 `@Serializable` keys as the modern equivalent of `Parcelable`.
+    *   Added new collaboration rule: **Comprehensive Code Commenting** (adding detailed comments to all new/modified code).
+    *   Updated `AGENT_RULES.md` and committed changes.
 
 ## Date: 2026-08-11
 

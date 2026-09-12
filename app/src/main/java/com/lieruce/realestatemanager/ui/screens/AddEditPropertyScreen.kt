@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lieruce.realestatemanager.data.model.PropertyConstants
 import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.data.model.RealEstateItem
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
@@ -25,33 +26,45 @@ fun AddEditPropertyScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Form State
-    var type by remember { mutableStateOf("") }
+    // Form state variables initialized with defaults or empty values
+    var type by remember { mutableStateOf(PropertyConstants.PROPERTY_TYPES.first()) }
     var price by remember { mutableStateOf("") }
     var surface by remember { mutableStateOf("") }
     var rooms by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
-    var pois by remember { mutableStateOf("") }
+    
+    // Using Sets for selected POIs and Amenities to easily toggle multi-select filter chips
+    var selectedPois by remember { mutableStateOf(setOf<String>()) }
+    var selectedAmenities by remember { mutableStateOf(setOf<String>()) }
+    
     var agent by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(PropertyStatus.AVAILABLE) }
+    
+    // Control state for the property type dropdown menu
+    var typeExpanded by remember { mutableStateOf(false) }
 
-    // If editing, load initial data
+    // If editing, load initial data from Room database
     val existingProperty by if (propertyId != null) {
         viewModel.getProperty(propertyId).collectAsStateWithLifecycle(initialValue = null)
     } else {
         remember { mutableStateOf(null) }
     }
 
+    // Populate form fields when existing property data is loaded
     LaunchedEffect(existingProperty) {
         existingProperty?.let { p ->
-            type = p.property.type
+            type = p.property.type.ifBlank { PropertyConstants.PROPERTY_TYPES.first() }
             price = p.property.priceInDollars.toString()
             surface = p.property.surfaceInSqm.toString()
             rooms = p.property.numberOfRooms.toString()
             description = p.property.description
             address = p.property.address
-            pois = p.property.pointsOfInterest
+            
+            // Convert comma-separated string back into a Set of strings for chip selection
+            selectedPois = p.property.pointsOfInterest.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
+            selectedAmenities = p.property.amenities.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
+            
             agent = p.property.agentName
             status = p.property.status
         }
@@ -68,6 +81,7 @@ fun AddEditPropertyScreen(
                 },
                 actions = {
                     IconButton(onClick = {
+                        // Build the RealEstateItem entity with standardized dropdown type and joined comma-separated strings for POIs and amenities
                         val newItem = RealEstateItem(
                             id = propertyId ?: 0L,
                             type = type,
@@ -76,7 +90,8 @@ fun AddEditPropertyScreen(
                             numberOfRooms = rooms.toIntOrNull() ?: 0,
                             description = description,
                             address = address,
-                            pointsOfInterest = pois,
+                            pointsOfInterest = selectedPois.joinToString(", "),
+                            amenities = selectedAmenities.joinToString(", "),
                             status = status,
                             entryDate = existingProperty?.property?.entryDate ?: System.currentTimeMillis(),
                             agentName = agent
@@ -97,14 +112,41 @@ fun AddEditPropertyScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Standardized Property Type Dropdown Menu
             item {
-                OutlinedTextField(
-                    value = type,
-                    onValueChange = { type = it },
-                    label = { Text("Type (Flat, House, etc.)") },
+                ExposedDropdownMenuBox(
+                    expanded = typeExpanded,
+                    onExpandedChange = { typeExpanded = !typeExpanded },
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    OutlinedTextField(
+                        value = type,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Property Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = typeExpanded,
+                        onDismissRequest = { typeExpanded = false }
+                    ) {
+                        PropertyConstants.PROPERTY_TYPES.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    type = option
+                                    typeExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
+            
+            // Price and Surface input row
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -123,6 +165,8 @@ fun AddEditPropertyScreen(
                     )
                 }
             }
+            
+            // Number of rooms
             item {
                 OutlinedTextField(
                     value = rooms,
@@ -132,6 +176,8 @@ fun AddEditPropertyScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }
+            
+            // Description
             item {
                 OutlinedTextField(
                     value = description,
@@ -141,6 +187,8 @@ fun AddEditPropertyScreen(
                     minLines = 3
                 )
             }
+            
+            // Address
             item {
                 OutlinedTextField(
                     value = address,
@@ -149,14 +197,68 @@ fun AddEditPropertyScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+            
+            // Standardized Points of Interest selection via Filter Chips
             item {
-                OutlinedTextField(
-                    value = pois,
-                    onValueChange = { pois = it },
-                    label = { Text("Points of Interest (Schools, Parks...)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Nearby Points of Interest",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        PropertyConstants.AVAILABLE_POIS.forEach { poi ->
+                            FilterChip(
+                                selected = selectedPois.contains(poi),
+                                onClick = {
+                                    selectedPois = if (selectedPois.contains(poi)) {
+                                        selectedPois - poi
+                                    } else {
+                                        selectedPois + poi
+                                    }
+                                },
+                                label = { Text(poi) }
+                            )
+                        }
+                    }
+                }
             }
+            
+            // Standardized Amenities selection via Filter Chips
+            item {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Property Amenities",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        PropertyConstants.AVAILABLE_AMENITIES.forEach { amenity ->
+                            FilterChip(
+                                selected = selectedAmenities.contains(amenity),
+                                onClick = {
+                                    selectedAmenities = if (selectedAmenities.contains(amenity)) {
+                                        selectedAmenities - amenity
+                                    } else {
+                                        selectedAmenities + amenity
+                                    }
+                                },
+                                label = { Text(amenity) }
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Agent name
             item {
                 OutlinedTextField(
                     value = agent,
@@ -165,6 +267,8 @@ fun AddEditPropertyScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+            
+            // Property Status selection (Available vs Sold)
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Status: ")

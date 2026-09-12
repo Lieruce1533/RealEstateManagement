@@ -65,6 +65,7 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
                 description = "A beautiful historic manor in the countryside.",
                 address = "123 Castle Road, Loire Valley",
                 pointsOfInterest = "Park, School",
+                amenities = "Swimming Pool, Gym, Wine Cellar", // Sample property amenities added for test data
                 status = PropertyStatus.AVAILABLE,
                 entryDate = System.currentTimeMillis(),
                 agentName = "Agent Smith",

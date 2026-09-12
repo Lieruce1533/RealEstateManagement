@@ -25,6 +25,7 @@ productive but also educational and architecturally sound.
 *   **Architectural Integrity**: The Agent must prioritize a clean, modern 
     Android architecture (MVVM, Repository pattern, Dependency Injection, etc.) 
     and explain how each part fits into this vision.
+*   **Comprehensive Code Commenting**: Every time new code is added or modified, include clear, descriptive comments explaining what the code does and why. The developer prefers having thorough inline documentation that they can prune later if needed.
 *   **files path**: when naming a file in the project or outside, 
 	don't use the full path name /home/user/doments/androidsutdio/projects......./class.kt
 	go for class.kt use the full only if it is needed and please make it different for the other text becuase it is quite unreadable otherwise 

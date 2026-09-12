@@ -172,6 +172,23 @@ fun PropertyDetailScreen(
                     )
                 }
 
+                // Display property amenities (e.g. Pool, Gym, Garage) if any are provided
+                if (property.amenities.isNotBlank()) {
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Amenities",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = property.amenities,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+
                 item {
                     HorizontalDivider()
                     Spacer(modifier = Modifier.height(8.dp))
