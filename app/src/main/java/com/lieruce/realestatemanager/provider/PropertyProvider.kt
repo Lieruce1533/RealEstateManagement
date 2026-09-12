@@ -7,6 +7,7 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
 import com.lieruce.realestatemanager.data.AppDatabase
+import androidx.core.net.toUri
 
 class PropertyProvider : ContentProvider() {
 
@@ -15,7 +16,7 @@ class PropertyProvider : ContentProvider() {
         const val TABLE_NAME = "real_estate_items"
         
         // URIs addresses
-        val URI_ITEM: Uri = Uri.parse("content://$AUTHORITY/$TABLE_NAME")
+        val URI_ITEM: Uri = "content://$AUTHORITY/$TABLE_NAME".toUri()
 
         // URI Matcher codes
         private const val PROPERTIES = 1
@@ -56,7 +57,7 @@ class PropertyProvider : ContentProvider() {
         }
     }
 
-    // Required methods but we only implement reading for now as per requirement
+    // Required methods, but we only implement reading for now as per requirement
     override fun getType(uri: Uri): String? {
         return "vnd.android.cursor.dir/$AUTHORITY.$TABLE_NAME"
     }

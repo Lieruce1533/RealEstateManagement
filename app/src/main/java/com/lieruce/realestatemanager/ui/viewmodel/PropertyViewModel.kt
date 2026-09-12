@@ -35,6 +35,22 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
     fun getProperty(id: Long) = repository.getPropertyById(id)
 
     /**
+     * Saves a property (new or existing) to the database.
+     */
+    fun saveProperty(
+        property: RealEstateItem,
+        pictures: List<PropertyPicture>
+    ) {
+        viewModelScope.launch {
+            if (property.id == 0L) {
+                repository.insertProperty(property, pictures)
+            } else {
+                repository.updateProperty(property, pictures)
+            }
+        }
+    }
+
+    /**
      * Kotlin 101: Coroutines (viewModelScope.launch)
      * Database operations are slow and must not happen on the UI thread.
      * 'launch' starts a "Coroutines" (a tiny background thread) to do the work.

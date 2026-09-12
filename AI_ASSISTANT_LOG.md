@@ -1,5 +1,14 @@
 # AI Assistant Progress Log
 
+## Date: 2026-09-12
+
+### Summary of Work Done
+1.  **Project Review & Mentorship**:
+    *   Reviewed earlier work (Kotlin basics, Room architecture, MVVM, Navigation 3).
+    *   Clarified `PropertyProvider` UriMatcher paths and the role of the `/#` wildcard.
+    *   Clarified Room database entity relationships between `RealEstateItem` and `PropertyPicture`, foreign keys, and CASCADE deletion.
+    *   Reviewed and aligned with `AGENT_RULES.md` collaboration rules.
+
 ## Date: 2026-08-11
 
 ### Summary of Work Done

@@ -26,6 +26,7 @@ import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 fun PropertyListScreen(
     viewModel: PropertyViewModel,
     onPropertyClick: (Long) -> Unit,
+    onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // collectAsStateWithLifecycle: This is the "Adapter" that connects the Flow
@@ -38,8 +39,8 @@ fun PropertyListScreen(
             TopAppBar(title = { Text("Real Estate Manager") })
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.addTestProperty() }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Test")
+            FloatingActionButton(onClick = onAddClick) {
+                Icon(Icons.Default.Add, contentDescription = "Add Property")
             }
         }
     ) { padding ->

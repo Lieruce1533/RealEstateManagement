@@ -50,6 +50,9 @@ fun RealEstateNavGraph(
                             if (backStack.lastOrNull() != NavKey.PropertyDetail(id)) {
                                 backStack.add(NavKey.PropertyDetail(id))
                             }
+                        },
+                        onAddClick = {
+                            backStack.add(NavKey.AddEditProperty())
                         }
                     )
                 }
@@ -76,7 +79,11 @@ fun RealEstateNavGraph(
             }
             is NavKey.AddEditProperty -> {
                 NavEntry(key = key) {
-                    AddEditPropertyScreen(propertyId = key.propertyId)
+                    AddEditPropertyScreen(
+                        propertyId = key.propertyId,
+                        viewModel = viewModel,
+                        onBackClick = { backStack.removeAt(backStack.size - 1) }
+                    )
                 }
             }
             is NavKey.Search -> {
