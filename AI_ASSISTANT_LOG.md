@@ -1,5 +1,12 @@
 # AI Assistant Progress Log
 
+## Date: 2026-09-13
+
+### Summary of Work Done
+1.  **Architecture Discussion & Mentorship**:
+    *   Explained Jetpack Compose **Single-Activity Architecture** (moving away from legacy multi-activity / multi-fragment designs).
+    *   Clarified that our screens are **Composable functions** (Screen Composables) rather than Fragments or Activities.
+
 ## Date: 2026-09-12
 
 ### Summary of Work Done

@@ -1,5 +1,6 @@
 package com.lieruce.realestatemanager.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,17 +12,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.data.model.PropertyWithPictures
+import com.lieruce.realestatemanager.data.model.RealEstateItem
+import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 
 /**
- * Compose 101: LazyColumn
- * This is the modern replacement for RecyclerView. It only renders items that are 
- * visible on the screen, making it very fast.
+ * Stateful wrapper for PropertyListScreen.
+ * It connects to the ViewModel to observe the live Flow of properties from the Room database.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PropertyListScreen(
     viewModel: PropertyViewModel,
@@ -29,11 +33,32 @@ fun PropertyListScreen(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // collectAsStateWithLifecycle: This is the "Adapter" that connects the Flow
-    // from the ViewModel to our UI. If the DB changes, this 'properties' list 
-    // will update and the screen will "Recompose".
+    // collectAsStateWithLifecycle connects the ViewModel's Flow to Compose state.
+    // Whenever database records change, this list updates and triggers recomposition.
     val properties by viewModel.allProperties.collectAsStateWithLifecycle()
 
+    // Delegate UI rendering to the stateless content composable so it can be previewed
+    PropertyListContent(
+        properties = properties,
+        onPropertyClick = onPropertyClick,
+        onAddClick = onAddClick,
+        modifier = modifier
+    )
+}
+
+/**
+ * Stateless UI content for PropertyListScreen.
+ * Purely renders data passed to it without knowing about ViewModels or Databases,
+ * which makes it fully previewable in Android Studio.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PropertyListContent(
+    properties: List<PropertyWithPictures>,
+    onPropertyClick: (Long) -> Unit,
+    onAddClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Real Estate Manager") })
@@ -44,15 +69,25 @@ fun PropertyListScreen(
             }
         }
     ) { padding ->
+        // Handle empty state vs list display
         if (properties.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("No properties found. Click + to add test data.")
             }
         } else {
+            // Compose 101: LazyColumn is the modern replacement for RecyclerView.
+            // It only renders items currently visible on screen for high performance.
             LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(properties) { propertyWithPictures ->
                     PropertyItem(
@@ -65,6 +100,9 @@ fun PropertyListScreen(
     }
 }
 
+/**
+ * Card item representing an individual real estate property in the list.
+ */
 @Composable
 fun PropertyItem(
     propertyWithPictures: PropertyWithPictures,
@@ -73,16 +111,85 @@ fun PropertyItem(
     val property = propertyWithPictures.property
     
     Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+        border = BorderStroke(1.dp, Color.White),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = property.type, style = MaterialTheme.typography.titleLarge)
-            Text(text = "$${property.priceInDollars}", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = "$${property.priceInDollars}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.height(2.dp))
             Text(text = property.address, style = MaterialTheme.typography.bodyMedium)
         }
+    }
+}
+
+// ============================================================================
+// COMPOSE PREVIEWS
+// ============================================================================
+
+@Preview(showBackground = true, name = "Property List - With Data")
+@Composable
+fun PropertyListContentPreview() {
+    RealEstateManagerTheme {
+        PropertyListContent(
+            properties = listOf(
+                PropertyWithPictures(
+                    property = RealEstateItem(
+                        id = 1L,
+                        type = "Manor",
+                        priceInDollars = 1500000,
+                        surfaceInSqm = 450,
+                        numberOfRooms = 12,
+                        description = "A historic manor in the countryside.",
+                        address = "123 Castle Road, Loire Valley",
+                        pointsOfInterest = "Park, School",
+                        amenities = "Swimming Pool, Gym",
+                        status = PropertyStatus.AVAILABLE,
+                        entryDate = System.currentTimeMillis(),
+                        agentName = "Agent Smith"
+                    ),
+                    pictures = emptyList()
+                ),
+                PropertyWithPictures(
+                    property = RealEstateItem(
+                        id = 2L,
+                        type = "Penthouse",
+                        priceInDollars = 950000,
+                        surfaceInSqm = 180,
+                        numberOfRooms = 5,
+                        description = "Luxury downtown penthouse with panoramic views.",
+                        address = "456 Skyline Ave, Metropolis",
+                        pointsOfInterest = "Subway, Shopping Mall",
+                        amenities = "Balcony, Terrace, Security System",
+                        status = PropertyStatus.SOLD,
+                        entryDate = System.currentTimeMillis(),
+                        agentName = "Agent Jane",
+                        saleDate = System.currentTimeMillis()
+                    ),
+                    pictures = emptyList()
+                )
+            ),
+            onPropertyClick = {},
+            onAddClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Property List - Empty State")
+@Composable
+fun PropertyListEmptyPreview() {
+    RealEstateManagerTheme {
+        PropertyListContent(
+            properties = emptyList(),
+            onPropertyClick = {},
+            onAddClick = {}
+        )
     }
 }

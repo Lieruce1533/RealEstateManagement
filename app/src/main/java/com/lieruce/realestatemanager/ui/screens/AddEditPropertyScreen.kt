@@ -21,10 +21,11 @@ import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditPropertyScreen(
+    modifier: Modifier = Modifier,
     propertyId: Long? = null,
     viewModel: PropertyViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+
 ) {
     // Form state variables initialized with defaults or empty values
     var type by remember { mutableStateOf(PropertyConstants.PROPERTY_TYPES.first()) }

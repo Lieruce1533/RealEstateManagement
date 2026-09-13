@@ -14,13 +14,17 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel acts as a bridge between the Data Layer (Repository) and the UI (Compose).
- * It uses 'viewModelScope' to run background tasks like saving to the database.
+ * PropertyViewModel acts as the bridge between the Data Layer (Repository) and the UI (Compose).
+ * It survives configuration changes (like screen rotation) and runs background operations
+ * safely using coroutines (viewModelScope).
  */
 class PropertyViewModel(private val repository: PropertyRepository) : ViewModel() {
 
-    // 'allProperties' is a StateFlow. It's like a LiveData but more modern.
-    // The UI will "subscribe" to this flow and update whenever the database changes.
+    /**
+     * allProperties is a StateFlow that emits a live list of properties with their pictures.
+     * We convert the Repository's Flow into a StateFlow using stateIn so that Compose 
+     * can collect it efficiently via collectAsStateWithLifecycle().
+     */
     val allProperties: StateFlow<List<PropertyWithPictures>> = repository.allProperties
         .stateIn(
             scope = viewModelScope,
@@ -29,13 +33,14 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
         )
 
     /**
-     * Fetches a specific property by its ID.
-     * We return a Flow so the UI stays updated if the property is edited.
+     * Fetches a specific property and its pictures by ID.
+     * Returns a Flow so the detail screen updates reactively if the property is modified.
      */
     fun getProperty(id: Long) = repository.getPropertyById(id)
 
     /**
-     * Saves a property (new or existing) to the database.
+     * Saves a property (either inserting a new one or updating an existing one).
+     * Uses viewModelScope.launch to run the database query on a background thread.
      */
     fun saveProperty(
         property: RealEstateItem,
@@ -51,9 +56,8 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
     }
 
     /**
-     * Kotlin 101: Coroutines (viewModelScope.launch)
-     * Database operations are slow and must not happen on the UI thread.
-     * 'launch' starts a "Coroutines" (a tiny background thread) to do the work.
+     * Adds a sample test property to the database to help verify UI layout and map integration.
+     * Uses a coroutine (viewModelScope.launch) to perform the database insertion off the main thread.
      */
     fun addTestProperty() {
         viewModelScope.launch {
@@ -65,7 +69,7 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
                 description = "A beautiful historic manor in the countryside.",
                 address = "123 Castle Road, Loire Valley",
                 pointsOfInterest = "Park, School",
-                amenities = "Swimming Pool, Gym, Wine Cellar", // Sample property amenities added for test data
+                amenities = "Swimming Pool, Gym, Wine Cellar",
                 status = PropertyStatus.AVAILABLE,
                 entryDate = System.currentTimeMillis(),
                 agentName = "Agent Smith",
@@ -78,8 +82,8 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
 }
 
 /**
- * Since ViewModel constructors can't take parameters by default, 
- * we use this Factory to "inject" the repository.
+ * ViewModelProvider.Factory is required because our PropertyViewModel takes a repository parameter.
+ * This factory creates instances of PropertyViewModel and injects the repository dependency.
  */
 class PropertyViewModelFactory(private val repository: PropertyRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
