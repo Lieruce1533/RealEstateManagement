@@ -1,5 +1,16 @@
 # AI Assistant Progress Log
 
+## Date: 2026-09-16
+
+### Summary of Work Done
+1.  **Currency Repository & Live Rates**:
+    *   Implemented `CurrencyRepository` using Coroutines (`Dispatchers.IO`) and `HttpURLConnection` to fetch live USD-to-EUR rates from the network.
+    *   Enhanced `Utils.java` with dynamic rate setters and automatic reverse rate calculation (`convertEuroToDollar`).
+    *   Triggered background rate fetching on app launch inside `MainActivity.kt`.
+2.  **Java 8+ API Desugaring (`java.time`)**:
+    *   Configured Java 8+ API Desugaring (`coreLibraryDesugaring`) in `app/build.gradle` and `gradle/libs.versions.toml`.
+    *   Enabled the use of modern `java.time` (`LocalDate`, `DateTimeFormatter`) across all Android API levels (23+).
+
 ## Date: 2026-09-13
 
 ### Summary of Work Done

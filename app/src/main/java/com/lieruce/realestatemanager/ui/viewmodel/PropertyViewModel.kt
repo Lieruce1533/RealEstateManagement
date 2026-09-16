@@ -40,7 +40,7 @@ class PropertyViewModel(private val repository: PropertyRepository) : ViewModel(
 
     /**
      * Saves a property (either inserting a new one or updating an existing one).
-     * Uses viewModelScope.launch to run the database query on a background thread.
+     * Uses viewModelScope. Launch to run the database query on a background thread.
      */
     fun saveProperty(
         property: RealEstateItem,

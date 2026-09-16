@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -12,10 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import com.lieruce.realestatemanager.R
 import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.data.model.PropertyWithPictures
 import com.lieruce.realestatemanager.data.model.RealEstateItem
@@ -101,7 +106,8 @@ fun PropertyListContent(
 }
 
 /**
- * Card item representing an individual real estate property in the list.
+ * Card item representing an individual real estate property in the list,
+ * displaying its thumbnail image and core details side-by-side in a Row.
  */
 @Composable
 fun PropertyItem(
@@ -109,6 +115,9 @@ fun PropertyItem(
     onClick: () -> Unit
 ) {
     val property = propertyWithPictures.property
+    
+    // Grab the URI of the first picture if available, or null otherwise
+    val firstPictureUri = propertyWithPictures.pictures.firstOrNull()?.uri
     
     Card(
         colors = CardDefaults.cardColors(
@@ -120,12 +129,40 @@ fun PropertyItem(
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = property.type, style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "$${property.priceInDollars}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = property.address, style = MaterialTheme.typography.bodyMedium)
+        // Row places the thumbnail on the left and property details on the right side-by-side
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // AsyncImage from Coil loads local URIs (gallery/camera) or URLs asynchronously
+            AsyncImage(
+                model = firstPictureUri ?: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6", // Fallback sample image if no picture attached yet
+                contentDescription = "Property thumbnail",
+                modifier = Modifier
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                placeholder = painterResource(R.drawable.ic_launcher_background),
+                error = painterResource(R.drawable.ic_launcher_background)
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Property details column
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = property.type, style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "$${property.priceInDollars}", 
+                    style = MaterialTheme.typography.bodyLarge, 
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(text = property.address, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

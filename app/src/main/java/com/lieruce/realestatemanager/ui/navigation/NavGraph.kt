@@ -11,86 +11,91 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.lieruce.realestatemanager.ui.screens.*
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 
+/**
+ * Navigation 3 graph defining screen routing and adaptive layouts.
+ * Uses type-safe NavKey objects and supports side-by-side list-detail views on tablets.
+ */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun RealEstateNavGraph(
     viewModel: PropertyViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val backStack = remember { mutableStateListOf<NavKey>(NavKey.PropertyList) }
-    val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
+    // The navigation backstack storing active navigation keys (starting with PropertyList)
+    val backStack = remember { mutableStateListOf<Any>(NavKey.PropertyList) }
     
+    // Adaptive scene strategy that automatically shows list and detail side-by-side on wide screens (tablets/foldables)
+    val listDetailStrategy = rememberListDetailSceneStrategy<Any>()
+    
+    // NavDisplay renders the current screen based on the backstack
     NavDisplay(
         modifier = modifier,
         backStack = backStack,
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.size - 1) },
-        sceneStrategy = listDetailStrategy
-    ) { key ->
-        when (key) {
-            is NavKey.PropertyList -> {
-                NavEntry(
-                    key = key,
-                    metadata = ListDetailSceneStrategy.listPane(
-                        detailPlaceholder = {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("Select a property from the list")
-                            }
+        sceneStrategies = listOf(listDetailStrategy),
+        entryProvider = entryProvider {
+            // 1. Property List Screen (Master pane)
+            entry<NavKey.PropertyList>(
+                metadata = ListDetailSceneStrategy.listPane(
+                    detailPlaceholder = {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Select a property from the list")
                         }
-                    )
-                ) {
-                    PropertyListScreen(
-                        viewModel = viewModel,
-                        onPropertyClick = { id ->
-                            // If the key is already in the backstack, we don't add it again (simple logic)
-                            if (backStack.lastOrNull() != NavKey.PropertyDetail(id)) {
-                                backStack.add(NavKey.PropertyDetail(id))
-                            }
-                        },
-                        onAddClick = {
-                            backStack.add(NavKey.AddEditProperty())
+                    }
+                )
+            ) {
+                PropertyListScreen(
+                    viewModel = viewModel,
+                    onPropertyClick = { id ->
+                        val detailKey = NavKey.PropertyDetail(id)
+                        // Prevent duplicate entries in backstack
+                        if (backStack.lastOrNull() != detailKey) {
+                            backStack.add(detailKey)
                         }
-                    )
-                }
+                    },
+                    onAddClick = {
+                        backStack.add(NavKey.AddEditProperty())
+                    }
+                )
             }
-            is NavKey.PropertyDetail -> {
-                NavEntry(
-                    key = key,
-                    metadata = ListDetailSceneStrategy.detailPane()
-                ) {
-                    PropertyDetailScreen(
-                        propertyId = key.propertyId,
-                        viewModel = viewModel,
-                        onBackClick = { backStack.removeAt(backStack.size - 1) },
-                        onEditClick = { id ->
-                            backStack.add(NavKey.AddEditProperty(id))
-                        }
-                    )
-                }
+            
+            // 2. Property Detail Screen (Detail pane)
+            entry<NavKey.PropertyDetail>(
+                metadata = ListDetailSceneStrategy.detailPane()
+            ) { key ->
+                PropertyDetailScreen(
+                    propertyId = key.propertyId,
+                    viewModel = viewModel,
+                    onBackClick = { backStack.removeAt(backStack.size - 1) },
+                    onEditClick = { id ->
+                        backStack.add(NavKey.AddEditProperty(id))
+                    }
+                )
             }
-            is NavKey.PropertyMap -> {
-                NavEntry(key = key) {
-                    PropertyMapScreen()
-                }
+            
+            // 3. Map Screen
+            entry<NavKey.PropertyMap> {
+                PropertyMapScreen()
             }
-            is NavKey.AddEditProperty -> {
-                NavEntry(key = key) {
-                    AddEditPropertyScreen(
-                        propertyId = key.propertyId,
-                        viewModel = viewModel,
-                        onBackClick = { backStack.removeAt(backStack.size - 1) }
-                    )
-                }
+            
+            // 4. Add or Edit Property Screen
+            entry<NavKey.AddEditProperty> { key ->
+                AddEditPropertyScreen(
+                    propertyId = key.propertyId,
+                    viewModel = viewModel,
+                    onBackClick = { backStack.removeAt(backStack.size - 1) }
+                )
             }
-            is NavKey.Search -> {
-                NavEntry(key = key) {
-                    SearchScreen()
-                }
+            
+            // 5. Search Screen
+            entry<NavKey.Search> {
+                SearchScreen()
             }
         }
-    }
+    )
 }
