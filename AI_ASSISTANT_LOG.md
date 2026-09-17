@@ -1,5 +1,11 @@
 # AI Assistant Progress Log
 
+## Date: 2026-09-17
+
+### Summary of Work Done
+1.  **Sample Data Seeding**:
+    *   Designed a robust sample data generator to seed 15 realistic properties across 3 agents ("Agent Smith", "Agent Jane", "Agent Dupont") with varied real estate types, prices, surfaces, amenities, points of interest, GPS coordinates, and real image URLs.
+
 ## Date: 2026-09-16
 
 ### Summary of Work Done
@@ -37,7 +43,7 @@
     *   Migrated the legacy project to **AndroidX**.
     *   Updated `compileSdk` to **37** and `minSdkVersion` to **23**.
     *   Cleaned up legacy Java/XML code and implemented modern `MainActivity.kt` with Jetpack Compose.
-    *   Renamed package from `com.openclassrooms` to `com.lieruce`.
+    *   Renamed package from `com.lieruce` to `com.lieruce`.
 2.  **Git & Infrastructure**:
     *   Initialized **Git** repository with a modern `.gitignore`.
     *   Created and switched to the **`develop`** branch.

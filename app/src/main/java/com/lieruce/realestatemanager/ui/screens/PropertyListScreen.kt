@@ -7,7 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,6 +39,8 @@ fun PropertyListScreen(
     viewModel: PropertyViewModel,
     onPropertyClick: (Long) -> Unit,
     onAddClick: () -> Unit,
+    onMapClick: () -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // collectAsStateWithLifecycle connects the ViewModel's Flow to Compose state.
@@ -47,6 +52,8 @@ fun PropertyListScreen(
         properties = properties,
         onPropertyClick = onPropertyClick,
         onAddClick = onAddClick,
+        onMapClick = onMapClick,
+        onSearchClick = onSearchClick,
         modifier = modifier
     )
 }
@@ -62,6 +69,8 @@ fun PropertyListContent(
     properties: List<PropertyWithPictures>,
     onPropertyClick: (Long) -> Unit,
     onAddClick: () -> Unit,
+    onMapClick: () -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -71,6 +80,29 @@ fun PropertyListContent(
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
                 Icon(Icons.Default.Add, contentDescription = "Add Property")
+            }
+        },
+        bottomBar = {
+            // Bottom navigation bar to easily switch between List, Map, and Search screens
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "List") },
+                    label = { Text("List") },
+                    selected = true,
+                    onClick = {}
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Place, contentDescription = "Map") },
+                    label = { Text("Map") },
+                    selected = false,
+                    onClick = onMapClick
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    label = { Text("Search") },
+                    selected = false,
+                    onClick = onSearchClick
+                )
             }
         }
     ) { padding ->
@@ -214,7 +246,9 @@ fun PropertyListContentPreview() {
                 )
             ),
             onPropertyClick = {},
-            onAddClick = {}
+            onAddClick = {},
+            onMapClick = {},
+            onSearchClick = {}
         )
     }
 }
@@ -226,7 +260,9 @@ fun PropertyListEmptyPreview() {
         PropertyListContent(
             properties = emptyList(),
             onPropertyClick = {},
-            onAddClick = {}
+            onAddClick = {},
+            onMapClick = {},
+            onSearchClick = {}
         )
     }
 }

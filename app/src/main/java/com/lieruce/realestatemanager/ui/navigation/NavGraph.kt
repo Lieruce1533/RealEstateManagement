@@ -39,7 +39,7 @@ fun RealEstateNavGraph(
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.size - 1) },
         sceneStrategies = listOf(listDetailStrategy),
         entryProvider = entryProvider {
-            // 1. Property List Screen (Master pane)
+            // 1. Property List Screen (Master pane) with bottom navigation to Map & Search
             entry<NavKey.PropertyList>(
                 metadata = ListDetailSceneStrategy.listPane(
                     detailPlaceholder = {
@@ -60,6 +60,14 @@ fun RealEstateNavGraph(
                     },
                     onAddClick = {
                         backStack.add(NavKey.AddEditProperty())
+                    },
+                    onMapClick = {
+                        backStack.clear()
+                        backStack.add(NavKey.PropertyMap)
+                    },
+                    onSearchClick = {
+                        backStack.clear()
+                        backStack.add(NavKey.Search)
                     }
                 )
             }
@@ -78,9 +86,25 @@ fun RealEstateNavGraph(
                 )
             }
             
-            // 3. Map Screen
+            // 3. Map Screen with bottom navigation to List & Search
             entry<NavKey.PropertyMap> {
-                PropertyMapScreen()
+                PropertyMapScreen(
+                    viewModel = viewModel,
+                    onPropertyClick = { id ->
+                        val detailKey = NavKey.PropertyDetail(id)
+                        if (backStack.lastOrNull() != detailKey) {
+                            backStack.add(detailKey)
+                        }
+                    },
+                    onListClick = {
+                        backStack.clear()
+                        backStack.add(NavKey.PropertyList)
+                    },
+                    onSearchClick = {
+                        backStack.clear()
+                        backStack.add(NavKey.Search)
+                    }
+                )
             }
             
             // 4. Add or Edit Property Screen
@@ -92,9 +116,18 @@ fun RealEstateNavGraph(
                 )
             }
             
-            // 5. Search Screen
+            // 5. Search Screen with bottom navigation to List & Map
             entry<NavKey.Search> {
-                SearchScreen()
+                SearchScreen(
+                    onListClick = {
+                        backStack.clear()
+                        backStack.add(NavKey.PropertyList)
+                    },
+                    onMapClick = {
+                        backStack.clear()
+                        backStack.add(NavKey.PropertyMap)
+                    }
+                )
             }
         }
     )
