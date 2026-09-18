@@ -2,8 +2,12 @@ package com.lieruce.realestatemanager.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.time.Instant
 
+/**
+ * Room Entity representing a real estate property table in SQLite.
+ * Uses java.time.Instant for modern timestamps and agentId as a foreign key to the agents table.
+ */
 @Entity(tableName = "real_estate_items")
 data class RealEstateItem(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -13,16 +17,17 @@ data class RealEstateItem(
     val numberOfRooms: Int,
     val description: String,
     val address: String,
-    val pointsOfInterest: String, // Comma separated interests
-    val amenities: String = "", // Comma-separated property amenities (e.g., Pool, Gym, Garage)
     val status: PropertyStatus = PropertyStatus.AVAILABLE,
-    val entryDate: Long, // Using Long for timestamp for simplicity with Room
-    val saleDate: Long? = null,
-    val agentName: String,
+    val entryDate: Instant,
+    val saleDate: Instant? = null,
+    val agentId: Long, // Foreign Key referencing Agent.id
     val latitude: Double? = null,
     val longitude: Double? = null
 )
 
+/**
+ * Enum representing whether a real estate property is available for purchase or has been sold.
+ */
 enum class PropertyStatus {
     AVAILABLE, SOLD
 }

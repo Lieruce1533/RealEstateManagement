@@ -1,5 +1,6 @@
 package com.lieruce.realestatemanager.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,9 +26,15 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
+/**
+ * PropertyDetailScreen displays the complete details of a selected real estate property,
+ * including its photos, price, surface, description, osmdroid map location, normalized amenities, POIs, and agent info.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PropertyDetailScreen(
@@ -37,8 +44,8 @@ fun PropertyDetailScreen(
     onEditClick: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Observe the specific property
-    val propertyWithPictures by viewModel.getProperty(propertyId).collectAsStateWithLifecycle(initialValue = null)
+    // Observe the specific property with all its normalized relations reactively from ViewModel
+    val propertyWithRelations by viewModel.getProperty(propertyId).collectAsStateWithLifecycle(initialValue = null)
 
     Scaffold(
         topBar = {
@@ -57,7 +64,7 @@ fun PropertyDetailScreen(
             )
         }
     ) { padding ->
-        val data = propertyWithPictures
+        val data = propertyWithRelations
         if (data == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -159,6 +166,7 @@ fun PropertyDetailScreen(
                     }
                 }
 
+                // Display normalized Points of Interest
                 item {
                     Text(
                         text = "Nearby",
@@ -166,14 +174,14 @@ fun PropertyDetailScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = property.pointsOfInterest,
+                        text = data.pois.joinToString(", ") { it.name },
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
 
-                // Display property amenities (e.g. Pool, Gym, Garage) if any are provided
-                if (property.amenities.isNotBlank()) {
+                // Display normalized property amenities if any are provided
+                if (data.amenities.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -182,7 +190,7 @@ fun PropertyDetailScreen(
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = property.amenities,
+                            text = data.amenities.joinToString(", ") { it.name },
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(top = 4.dp)
                         )
@@ -192,7 +200,7 @@ fun PropertyDetailScreen(
                 item {
                     HorizontalDivider()
                     Spacer(modifier = Modifier.height(8.dp))
-                    PropertyMetadataRow(label = "Agent", value = property.agentName)
+                    PropertyMetadataRow(label = "Agent", value = data.agent?.name ?: "Unknown")
                     PropertyMetadataRow(label = "Entry Date", value = formatDate(property.entryDate))
                     if (property.status == PropertyStatus.SOLD && property.saleDate != null) {
                         PropertyMetadataRow(label = "Sale Date", value = formatDate(property.saleDate))
@@ -253,7 +261,7 @@ fun StatusChip(status: PropertyStatus) {
     Surface(
         color = color.copy(alpha = 0.1f),
         shape = RoundedCornerShape(16.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color)
+        border = BorderStroke(1.dp, color)
     ) {
         Text(
             text = status.name,
@@ -276,7 +284,11 @@ fun PropertyMetadataRow(label: String, value: String) {
     }
 }
 
-fun formatDate(timestamp: Long): String {
-    val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
-    return sdf.format(Date(timestamp))
+/**
+ * Formats a java.time.Instant into a clean human-readable date string.
+ */
+fun formatDate(instant: Instant): String {
+    val formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.getDefault())
+        .withZone(ZoneId.systemDefault())
+    return formatter.format(instant)
 }

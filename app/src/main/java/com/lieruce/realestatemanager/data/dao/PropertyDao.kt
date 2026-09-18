@@ -2,21 +2,23 @@ package com.lieruce.realestatemanager.data.dao
 
 import androidx.room.*
 import android.database.Cursor
-import com.lieruce.realestatemanager.data.model.PropertyPicture
-import com.lieruce.realestatemanager.data.model.RealEstateItem
-import com.lieruce.realestatemanager.data.model.PropertyWithPictures
+import com.lieruce.realestatemanager.data.model.*
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Data Access Object (DAO) providing structured SQL operations for properties,
+ * agents, amenities, points of interest, and relational cross-references.
+ */
 @Dao
 interface PropertyDao {
 
     @Transaction
     @Query("SELECT * FROM real_estate_items")
-    fun getAllProperties(): Flow<List<PropertyWithPictures>>
+    fun getAllProperties(): Flow<List<PropertyWithRelations>>
 
     @Transaction
     @Query("SELECT * FROM real_estate_items WHERE id = :propertyId")
-    fun getPropertyById(propertyId: Long): Flow<PropertyWithPictures?>
+    fun getPropertyById(propertyId: Long): Flow<PropertyWithRelations?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProperty(property: RealEstateItem): Long
@@ -26,6 +28,21 @@ interface PropertyDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPictures(pictures: List<PropertyPicture>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAgent(agent: Agent): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAmenity(amenity: Amenity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPoi(poi: Poi): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAmenityCrossRef(crossRef: PropertyAmenityCrossRef)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPoiCrossRef(crossRef: PropertyPoiCrossRef)
 
     @Delete
     suspend fun deletePicture(picture: PropertyPicture)
@@ -37,6 +54,4 @@ interface PropertyDao {
     @Transaction
     @Query("SELECT * FROM real_estate_items WHERE id = :propertyId")
     fun getPropertyByIdCursor(propertyId: Long): Cursor
-
-    // Search/Filter query will go here later
 }

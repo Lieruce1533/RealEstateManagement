@@ -24,11 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.lieruce.realestatemanager.R
-import com.lieruce.realestatemanager.data.model.PropertyStatus
-import com.lieruce.realestatemanager.data.model.PropertyWithPictures
-import com.lieruce.realestatemanager.data.model.RealEstateItem
+import com.lieruce.realestatemanager.data.model.*
 import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import java.time.Instant
 
 /**
  * Stateful wrapper for PropertyListScreen.
@@ -66,7 +65,7 @@ fun PropertyListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PropertyListContent(
-    properties: List<PropertyWithPictures>,
+    properties: List<PropertyWithRelations>,
     onPropertyClick: (Long) -> Unit,
     onAddClick: () -> Unit,
     onMapClick: () -> Unit,
@@ -126,10 +125,10 @@ fun PropertyListContent(
                     .padding(horizontal = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(properties) { propertyWithPictures ->
+                items(properties) { propertyWithRelations ->
                     PropertyItem(
-                        propertyWithPictures = propertyWithPictures,
-                        onClick = { onPropertyClick(propertyWithPictures.property.id) }
+                        propertyWithRelations = propertyWithRelations,
+                        onClick = { onPropertyClick(propertyWithRelations.property.id) }
                     )
                 }
             }
@@ -143,13 +142,13 @@ fun PropertyListContent(
  */
 @Composable
 fun PropertyItem(
-    propertyWithPictures: PropertyWithPictures,
+    propertyWithRelations: PropertyWithRelations,
     onClick: () -> Unit
 ) {
-    val property = propertyWithPictures.property
+    val property = propertyWithRelations.property
     
     // Grab the URI of the first picture if available, or null otherwise
-    val firstPictureUri = propertyWithPictures.pictures.firstOrNull()?.uri
+    val firstPictureUri = propertyWithRelations.pictures.firstOrNull()?.uri
     
     Card(
         colors = CardDefaults.cardColors(
@@ -209,7 +208,7 @@ fun PropertyListContentPreview() {
     RealEstateManagerTheme {
         PropertyListContent(
             properties = listOf(
-                PropertyWithPictures(
+                PropertyWithRelations(
                     property = RealEstateItem(
                         id = 1L,
                         type = "Manor",
@@ -218,15 +217,16 @@ fun PropertyListContentPreview() {
                         numberOfRooms = 12,
                         description = "A historic manor in the countryside.",
                         address = "123 Castle Road, Loire Valley",
-                        pointsOfInterest = "Park, School",
-                        amenities = "Swimming Pool, Gym",
                         status = PropertyStatus.AVAILABLE,
-                        entryDate = System.currentTimeMillis(),
-                        agentName = "Agent Smith"
+                        entryDate = Instant.now(),
+                        agentId = 1L
                     ),
-                    pictures = emptyList()
+                    agent = Agent(id = 1L, name = "Agent Smith", email = "smith@realestate.com", phone = "+15550192834"),
+                    pictures = emptyList(),
+                    amenities = listOf(Amenity(id = 1L, name = "Swimming Pool"), Amenity(id = 2L, name = "Gym")),
+                    pois = listOf(Poi(id = 1L, name = "Park"), Poi(id = 2L, name = "School"))
                 ),
-                PropertyWithPictures(
+                PropertyWithRelations(
                     property = RealEstateItem(
                         id = 2L,
                         type = "Penthouse",
@@ -235,14 +235,15 @@ fun PropertyListContentPreview() {
                         numberOfRooms = 5,
                         description = "Luxury downtown penthouse with panoramic views.",
                         address = "456 Skyline Ave, Metropolis",
-                        pointsOfInterest = "Subway, Shopping Mall",
-                        amenities = "Balcony, Terrace, Security System",
                         status = PropertyStatus.SOLD,
-                        entryDate = System.currentTimeMillis(),
-                        agentName = "Agent Jane",
-                        saleDate = System.currentTimeMillis()
+                        entryDate = Instant.now(),
+                        saleDate = Instant.now(),
+                        agentId = 2L
                     ),
-                    pictures = emptyList()
+                    agent = Agent(id = 2L, name = "Agent Jane", email = "jane@realestate.com", phone = "+15558392041"),
+                    pictures = emptyList(),
+                    amenities = listOf(Amenity(id = 3L, name = "Balcony"), Amenity(id = 4L, name = "Terrace")),
+                    pois = listOf(Poi(id = 3L, name = "Subway"), Poi(id = 4L, name = "Mall"))
                 )
             ),
             onPropertyClick = {},

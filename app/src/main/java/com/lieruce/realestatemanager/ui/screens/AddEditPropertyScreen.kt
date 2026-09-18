@@ -17,15 +17,19 @@ import com.lieruce.realestatemanager.data.model.PropertyConstants
 import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.data.model.RealEstateItem
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import java.time.Instant
 
+/**
+ * AddEditPropertyScreen allows agents to create new real estate properties or edit existing ones,
+ * using standardized dropdowns for property types and multi-select filter chips for amenities and POIs.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditPropertyScreen(
-    modifier: Modifier = Modifier,
     propertyId: Long? = null,
     viewModel: PropertyViewModel,
     onBackClick: () -> Unit,
-
+    modifier: Modifier = Modifier
 ) {
     // Form state variables initialized with defaults or empty values
     var type by remember { mutableStateOf(PropertyConstants.PROPERTY_TYPES.first()) }
@@ -39,13 +43,12 @@ fun AddEditPropertyScreen(
     var selectedPois by remember { mutableStateOf(setOf<String>()) }
     var selectedAmenities by remember { mutableStateOf(setOf<String>()) }
     
-    var agent by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(PropertyStatus.AVAILABLE) }
     
     // Control state for the property type dropdown menu
     var typeExpanded by remember { mutableStateOf(false) }
 
-    // If editing, load initial data from Room database
+    // If editing, load initial data from Room database (PropertyWithRelations)
     val existingProperty by if (propertyId != null) {
         viewModel.getProperty(propertyId).collectAsStateWithLifecycle(initialValue = null)
     } else {
@@ -62,11 +65,10 @@ fun AddEditPropertyScreen(
             description = p.property.description
             address = p.property.address
             
-            // Convert comma-separated string back into a Set of strings for chip selection
-            selectedPois = p.property.pointsOfInterest.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
-            selectedAmenities = p.property.amenities.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
+            // Convert normalized POIs and amenities lists into Sets of strings for chip selection
+            selectedPois = p.pois.map { it.name }.toSet()
+            selectedAmenities = p.amenities.map { it.name }.toSet()
             
-            agent = p.property.agentName
             status = p.property.status
         }
     }
@@ -82,7 +84,7 @@ fun AddEditPropertyScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        // Build the RealEstateItem entity with standardized dropdown type and joined comma-separated strings for POIs and amenities
+                        // Build the RealEstateItem entity with normalized agentId and fields
                         val newItem = RealEstateItem(
                             id = propertyId ?: 0L,
                             type = type,
@@ -91,11 +93,9 @@ fun AddEditPropertyScreen(
                             numberOfRooms = rooms.toIntOrNull() ?: 0,
                             description = description,
                             address = address,
-                            pointsOfInterest = selectedPois.joinToString(", "),
-                            amenities = selectedAmenities.joinToString(", "),
                             status = status,
-                            entryDate = existingProperty?.property?.entryDate ?: System.currentTimeMillis(),
-                            agentName = agent
+                            entryDate = existingProperty?.property?.entryDate ?: Instant.now(),
+                            agentId = existingProperty?.property?.agentId ?: 1L // Default to Agent Smith (id = 1)
                         )
                         viewModel.saveProperty(newItem, emptyList())
                         onBackClick()
@@ -257,16 +257,6 @@ fun AddEditPropertyScreen(
                         }
                     }
                 }
-            }
-            
-            // Agent name
-            item {
-                OutlinedTextField(
-                    value = agent,
-                    onValueChange = { agent = it },
-                    label = { Text("Real Estate Agent") },
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
             
             // Property Status selection (Available vs Sold)

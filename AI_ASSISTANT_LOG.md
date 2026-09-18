@@ -1,5 +1,12 @@
 # AI Assistant Progress Log
 
+## Date: 2026-09-18
+
+### Summary of Work Done
+1.  **Database Schema Export**:
+    *   Configured Room schema export (`exportSchema = true` and `room.schemaLocation`) in `AppDatabase.kt` and `app/build.gradle` to generate version-controlled JSON schema files for documentation and presentation graphs.
+    *   Updated Android Gradle Plugin (AGP) to `9.4.1` in `libs.versions.toml`.
+
 ## Date: 2026-09-17
 
 ### Summary of Work Done
