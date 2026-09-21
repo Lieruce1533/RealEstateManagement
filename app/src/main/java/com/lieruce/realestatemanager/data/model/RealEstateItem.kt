@@ -1,12 +1,14 @@
 package com.lieruce.realestatemanager.data.model
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.Instant
 
 /**
  * Room Entity representing a real estate property table in SQLite.
- * Uses java.time.Instant for modern timestamps and agentId as a foreign key to the agents table.
+ * Uses java.time.Instant for modern timestamps, agentId as a foreign key,
+ * and @Embedded PropertyLocation to group address and GPS coordinates cleanly.
  */
 @Entity(tableName = "real_estate_items")
 data class RealEstateItem(
@@ -16,13 +18,11 @@ data class RealEstateItem(
     val surfaceInSqm: Int,
     val numberOfRooms: Int,
     val description: String,
-    val address: String,
+    @Embedded val location: PropertyLocation, // Grouped address, latitude, and longitude
     val status: PropertyStatus = PropertyStatus.AVAILABLE,
     val entryDate: Instant,
     val saleDate: Instant? = null,
-    val agentId: Long, // Foreign Key referencing Agent.id
-    val latitude: Double? = null,
-    val longitude: Double? = null
+    val agentId: Long // Foreign Key referencing Agent.id
 )
 
 /**

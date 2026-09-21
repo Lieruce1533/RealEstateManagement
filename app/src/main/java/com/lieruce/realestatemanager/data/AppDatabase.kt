@@ -90,12 +90,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 350,
                         numberOfRooms = 7,
                         description = "Magnificent luxury penthouse overlooking Central Park with private elevator.",
-                        address = "157 West 57th St, Manhattan, New York, NY",
+                        location = PropertyLocation(
+                            address = "157 West 57th St, Manhattan, New York, NY",
+                            latitude = 40.7656,
+                            longitude = -73.9799
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 10),
-                        agentId = agentSmithId,
-                        latitude = 40.7656,
-                        longitude = -73.9799
+                        agentId = agentSmithId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00", description = "Living room view"),
@@ -111,12 +113,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 300,
                         numberOfRooms = 9,
                         description = "Classic historic Harlem brownstone with original fireplaces and private garden.",
-                        address = "124 West 120th St, Harlem, New York, NY",
+                        location = PropertyLocation(
+                            address = "124 West 120th St, Harlem, New York, NY",
+                            latitude = 40.8065,
+                            longitude = -73.9485
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 8),
-                        agentId = agentJaneId,
-                        latitude = 40.8065,
-                        longitude = -73.9485
+                        agentId = agentJaneId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914", description = "Brownstone exterior"),
@@ -132,12 +136,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 200,
                         numberOfRooms = 5,
                         description = "Spacious Tribeca industrial loft with exposed brick and high ceilings.",
-                        address = "74 Franklin St, Tribeca, New York, NY",
+                        location = PropertyLocation(
+                            address = "74 Franklin St, Tribeca, New York, NY",
+                            latitude = 40.7163,
+                            longitude = -74.0048
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 6),
-                        agentId = agentDupontId,
-                        latitude = 40.7163,
-                        longitude = -74.0048
+                        agentId = agentDupontId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688", description = "Open space"),
@@ -153,12 +159,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 120,
                         numberOfRooms = 4,
                         description = "Elegant Upper East Side apartment steps from Fifth Avenue shopping.",
-                        address = "834 Fifth Avenue, Upper East Side, New York, NY",
+                        location = PropertyLocation(
+                            address = "834 Fifth Avenue, Upper East Side, New York, NY",
+                            latitude = 40.7712,
+                            longitude = -73.9674
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 5),
-                        agentId = agentSmithId,
-                        latitude = 40.7712,
-                        longitude = -73.9674
+                        agentId = agentSmithId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", description = "Living room"),
@@ -174,12 +182,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 320,
                         numberOfRooms = 10,
                         description = "Stunning Brooklyn Heights townhouse with stunning harbor views.",
-                        address = "45 Willow St, Brooklyn Heights, New York, NY",
+                        location = PropertyLocation(
+                            address = "45 Willow St, Brooklyn Heights, New York, NY",
+                            latitude = 40.6970,
+                            longitude = -73.9946
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 4),
-                        agentId = agentJaneId,
-                        latitude = 40.6970,
-                        longitude = -73.9946
+                        agentId = agentJaneId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9", description = "Townhouse front"),
@@ -195,13 +205,15 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 160,
                         numberOfRooms = 5,
                         description = "Billionaires' Row ultra-luxury residence with full hotel amenities.",
-                        address = "111 West 57th St, Manhattan, New York, NY",
+                        location = PropertyLocation(
+                            address = "111 West 57th St, Manhattan, New York, NY",
+                            latitude = 40.7648,
+                            longitude = -73.9776
+                        ),
                         status = PropertyStatus.SOLD,
                         entryDate = Instant.now().minusSeconds(86400L * 30),
                         saleDate = Instant.now().minusSeconds(86400L * 3),
-                        agentId = agentDupontId,
-                        latitude = 40.7648,
-                        longitude = -73.9776
+                        agentId = agentDupontId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00", description = "Interior view"),
@@ -217,12 +229,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 150,
                         numberOfRooms = 6,
                         description = "Trendy Williamsburg duplex with double-height windows and private patio.",
-                        address = "15 North 6th St, Williamsburg, Brooklyn, NY",
+                        location = PropertyLocation(
+                            address = "15 North 6th St, Williamsburg, Brooklyn, NY",
+                            latitude = 40.7188,
+                            longitude = -73.9592
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 3),
-                        agentId = agentSmithId,
-                        latitude = 40.7188,
-                        longitude = -73.9592
+                        agentId = agentSmithId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0", description = "Living area"),
@@ -238,12 +252,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 90,
                         numberOfRooms = 3,
                         description = "Modern Long Island City glass condo with skyline vistas.",
-                        address = "42-15 Crescent St, Long Island City, NY",
+                        location = PropertyLocation(
+                            address = "42-15 Crescent St, Long Island City, NY",
+                            latitude = 40.7523,
+                            longitude = -73.9390
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 12),
-                        agentId = agentJaneId,
-                        latitude = 40.7523,
-                        longitude = -73.9390
+                        agentId = agentJaneId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1502005229762-cf1b4da7c5d6", description = "Condo view"),
@@ -259,12 +275,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 280,
                         numberOfRooms = 8,
                         description = "Park Slope historic brownstone steps from Prospect Park.",
-                        address = "250 Park Slope West, Brooklyn, NY",
+                        location = PropertyLocation(
+                            address = "250 Park Slope West, Brooklyn, NY",
+                            latitude = 40.6700,
+                            longitude = -73.9800
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 9),
-                        agentId = agentDupontId,
-                        latitude = 40.6700,
-                        longitude = -73.9800
+                        agentId = agentDupontId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914", description = "Facade"),
@@ -280,12 +298,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 400,
                         numberOfRooms = 8,
                         description = "Financial District crown jewel penthouse with 360-degree river views.",
-                        address = "50 West St, Financial District, New York, NY",
+                        location = PropertyLocation(
+                            address = "50 West St, Financial District, New York, NY",
+                            latitude = 40.7081,
+                            longitude = -74.0143
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 7),
-                        agentId = agentSmithId,
-                        latitude = 40.7081,
-                        longitude = -74.0143
+                        agentId = agentSmithId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00", description = "Rooftop terrace"),
@@ -301,12 +321,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 190,
                         numberOfRooms = 5,
                         description = "SoHo artistic loft with cast-iron columns and soaring ceilings.",
-                        address = "200 Mercer St, SoHo, New York, NY",
+                        location = PropertyLocation(
+                            address = "200 Mercer St, SoHo, New York, NY",
+                            latitude = 40.7250,
+                            longitude = -73.9960
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 11),
-                        agentId = agentJaneId,
-                        latitude = 40.7250,
-                        longitude = -73.9960
+                        agentId = agentJaneId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688", description = "Loft space"),
@@ -322,12 +344,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 750,
                         numberOfRooms = 16,
                         description = "Exclusive Hamptons estate with private tennis court and heated pool.",
-                        address = "777 Dune Road, The Hamptons, New York, NY",
+                        location = PropertyLocation(
+                            address = "777 Dune Road, The Hamptons, New York, NY",
+                            latitude = 40.9100,
+                            longitude = -72.4300
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 20),
-                        agentId = agentDupontId,
-                        latitude = 40.9100,
-                        longitude = -72.4300
+                        agentId = agentDupontId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92", description = "Estate exterior"),
@@ -343,12 +367,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 110,
                         numberOfRooms = 4,
                         description = "Midtown East classic apartment near Grand Central Terminal.",
-                        address = "300 East 54th St, Midtown, New York, NY",
+                        location = PropertyLocation(
+                            address = "300 East 54th St, Midtown, New York, NY",
+                            latitude = 40.7580,
+                            longitude = -73.9680
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 2),
-                        agentId = agentSmithId,
-                        latitude = 40.7580,
-                        longitude = -73.9680
+                        agentId = agentSmithId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", description = "Living room"),
@@ -364,12 +390,14 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 310,
                         numberOfRooms = 9,
                         description = "Charming Brooklyn Heights brick townhouse with private courtyard.",
-                        address = "88 Cranberry St, Brooklyn Heights, New York, NY",
+                        location = PropertyLocation(
+                            address = "88 Cranberry St, Brooklyn Heights, New York, NY",
+                            latitude = 40.7000,
+                            longitude = -73.9920
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 15),
-                        agentId = agentJaneId,
-                        latitude = 40.7000,
-                        longitude = -73.9920
+                        agentId = agentJaneId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c", description = "Courtyard"),
@@ -385,16 +413,18 @@ abstract class AppDatabase : RoomDatabase() {
                         surfaceInSqm = 170,
                         numberOfRooms = 5,
                         description = "Prestige residence at 15 Central Park West with unmatched park views.",
-                        address = "15 Central Park West, New York, NY",
+                        location = PropertyLocation(
+                            address = "15 Central Park West, New York, NY",
+                            latitude = 40.7680,
+                            longitude = -73.9810
+                        ),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now().minusSeconds(86400L * 1),
-                        agentId = agentDupontId,
-                        latitude = 40.7680,
-                        longitude = -73.9810
+                        agentId = agentDupontId
                     ),
                     listOf(
                         PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00", description = "Park view"),
-                        PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd", description = "Lobby")
+                        PropertyPicture(propertyId = 0, uri = "https://images.unsplash.com/property-id/0", description = "Lobby")
                     ),
                     Pair("Swimming Pool, Gym, Terrace, Security System, Air Conditioning", "Central Park, Lincoln Center, Museum")
                 )

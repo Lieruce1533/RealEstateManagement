@@ -192,7 +192,7 @@ fun PropertyItem(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(text = property.address, style = MaterialTheme.typography.bodyMedium)
+                Text(text = property.location.address, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -216,7 +216,7 @@ fun PropertyListContentPreview() {
                         surfaceInSqm = 450,
                         numberOfRooms = 12,
                         description = "A historic manor in the countryside.",
-                        address = "123 Castle Road, Loire Valley",
+                        location = PropertyLocation(address = "123 Castle Road, Loire Valley"),
                         status = PropertyStatus.AVAILABLE,
                         entryDate = Instant.now(),
                         agentId = 1L
@@ -224,7 +224,7 @@ fun PropertyListContentPreview() {
                     agent = Agent(id = 1L, name = "Agent Smith", email = "smith@realestate.com", phone = "+15550192834"),
                     pictures = emptyList(),
                     amenities = listOf(Amenity(id = 1L, name = "Swimming Pool"), Amenity(id = 2L, name = "Gym")),
-                    pois = listOf(Poi(id = 1L, name = "Park"), Poi(id = 2L, name = "School"))
+                    pois = listOf(Poi(id = 1L, name = "Park"), Poi(id = 1L, name = "School"))
                 ),
                 PropertyWithRelations(
                     property = RealEstateItem(
@@ -234,7 +234,7 @@ fun PropertyListContentPreview() {
                         surfaceInSqm = 180,
                         numberOfRooms = 5,
                         description = "Luxury downtown penthouse with panoramic views.",
-                        address = "456 Skyline Ave, Metropolis",
+                        location = PropertyLocation(address = "456 Skyline Ave, Metropolis"),
                         status = PropertyStatus.SOLD,
                         entryDate = Instant.now(),
                         saleDate = Instant.now(),

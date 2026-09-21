@@ -15,6 +15,9 @@ class PropertyRepository(private val propertyDao: PropertyDao) {
     // Live stream of all properties with their full relations (Agent, Pictures, Amenities, POIs)
     val allProperties: Flow<List<PropertyWithRelations>> = propertyDao.getAllProperties()
 
+    // Live stream of all registered real estate agents
+    val allAgents = propertyDao.getAllAgents()
+
     /**
      * Fetches a single property and its relations by ID.
      */
@@ -27,15 +30,18 @@ class PropertyRepository(private val propertyDao: PropertyDao) {
      */
     suspend fun insertProperty(property: RealEstateItem, pictures: List<PropertyPicture>) {
         val propertyId = propertyDao.insertProperty(property)
-        val picturesWithId = pictures.map { it.copy(propertyId = propertyId) }
+        val picturesWithId = pictures.map { it.copy(propertyId = propertyId, id = 0L) }
         propertyDao.insertPictures(picturesWithId)
     }
 
     /**
-     * Updates an existing property item and inserts any new pictures.
+     * Updates an existing property item, clears outdated pictures, and inserts the updated picture list.
      */
     suspend fun updateProperty(property: RealEstateItem, newPictures: List<PropertyPicture>) {
         propertyDao.updateProperty(property)
-        propertyDao.insertPictures(newPictures)
+        // Clear old pictures associated with this property to prevent duplication before inserting updated ones
+        propertyDao.deletePicturesForProperty(property.id)
+        val picturesWithId = newPictures.map { it.copy(propertyId = property.id, id = 0L) }
+        propertyDao.insertPictures(picturesWithId)
     }
 }

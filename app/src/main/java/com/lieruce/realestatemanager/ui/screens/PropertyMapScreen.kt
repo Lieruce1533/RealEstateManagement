@@ -81,10 +81,10 @@ fun PropertyMapScreen(
                 mapView.overlays.clear()
 
                 // Add a marker for each property that has valid GPS coordinates
-                for (propertyWithPictures in properties) {
-                    val property = propertyWithPictures.property
-                    val lat = property.latitude
-                    val lon = property.longitude
+                for (propertyWithRelations in properties) {
+                    val property = propertyWithRelations.property
+                    val lat = property.location.latitude
+                    val lon = property.location.longitude
 
                     if (lat != null && lon != null) {
                         val point = GeoPoint(lat, lon)
@@ -92,7 +92,7 @@ fun PropertyMapScreen(
                             position = point
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                             title = property.type
-                            snippet = "$${property.priceInDollars} - ${property.address}"
+                            snippet = "$${property.priceInDollars} - ${property.location.address}"
                             
                             // Set listener to navigate to property detail when marker is tapped
                             setOnMarkerClickListener { clickedMarker, _ ->

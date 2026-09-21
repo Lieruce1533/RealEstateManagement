@@ -1,5 +1,18 @@
 # AI Assistant Progress Log
 
+## Date: 2026-09-21
+
+### Summary of Work Done
+1.  **API Desugaring Lint Warning Investigation & Fix**:
+    *   Explained why Android Studio's static code analyzer (Lint) flags `java.time.Instant` when `minSdk` is 23, even with Java 8+ API desugaring enabled.
+    *   Resolved the editor warning using `@SuppressLint("NewApi")` annotations.
+
+## Date: 2026-09-20
+
+### Summary of Work Done
+1.  **Image Compression & Resizing Strategy**:
+    *   Discussed and planned image downscaling and compression inside `ImageManager` to handle massive smartphone camera photos efficiently (generating optimized thumbnails and display sizes).
+
 ## Date: 2026-09-18
 
 ### Summary of Work Done
@@ -60,7 +73,7 @@
     *   Created **PropertyDao** and **PropertyRepository**.
     *   Implemented a **Content Provider** (`PropertyProvider`) for external data access.
 4.  **UI & Navigation**:
-    *   Set up **Navigation 3** with an **Adaptive NavGraph** (supports Phone and Tablet side-by-side).
+    *   Set up **Navigation`3`** with an **Adaptive NavGraph** (supports Phone and Tablet side-by-side).
     *   Created a modern **Material 3 Theme** (`ui/theme`).
     *   Developed screen stubs for List, Detail, Map, Add/Edit, and Search.
 

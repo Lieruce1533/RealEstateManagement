@@ -47,6 +47,12 @@ interface PropertyDao {
     @Delete
     suspend fun deletePicture(picture: PropertyPicture)
 
+    /**
+     * Deletes all picture records associated with a specific property ID (used during updates).
+     */
+    @Query("DELETE FROM property_pictures WHERE propertyId = :propertyId")
+    suspend fun deletePicturesForProperty(propertyId: Long)
+
     @Transaction
     @Query("SELECT * FROM real_estate_items")
     fun getAllPropertiesCursor(): Cursor
@@ -54,4 +60,10 @@ interface PropertyDao {
     @Transaction
     @Query("SELECT * FROM real_estate_items WHERE id = :propertyId")
     fun getPropertyByIdCursor(propertyId: Long): Cursor
+
+    /**
+     * Retrieves all real estate agents from the database for filtering purposes.
+     */
+    @Query("SELECT * FROM agents")
+    fun getAllAgents(): Flow<List<Agent>>
 }

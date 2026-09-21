@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.lieruce.realestatemanager.data.AppDatabase
 import com.lieruce.realestatemanager.data.CurrencyRepository
+import com.lieruce.realestatemanager.data.LocationRepository
 import com.lieruce.realestatemanager.data.PropertyRepository
 import com.lieruce.realestatemanager.ui.navigation.RealEstateNavGraph
 import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
@@ -21,11 +22,15 @@ class MainActivity : ComponentActivity() {
     private val database by lazy { AppDatabase.getDatabase(this) }
     private val repository by lazy { PropertyRepository(database.propertyDao()) }
     
+    // Instantiate our LocationRepository to handle geocoding addresses to GPS coordinates
+    private val locationRepository by lazy { LocationRepository(this) }
+    
     // Instantiate our CurrencyRepository to fetch live rates
     private val currencyRepository by lazy { CurrencyRepository() }
     
+    // Provide repository and locationRepository to ViewModel via factory
     private val viewModel: PropertyViewModel by viewModels {
-        PropertyViewModelFactory(repository)
+        PropertyViewModelFactory(repository, locationRepository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

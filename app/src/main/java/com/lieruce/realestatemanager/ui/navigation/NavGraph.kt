@@ -119,6 +119,13 @@ fun RealEstateNavGraph(
             // 5. Search Screen with bottom navigation to List & Map
             entry<NavKey.Search> {
                 SearchScreen(
+                    viewModel = viewModel,
+                    onPropertyClick = { id ->
+                        val detailKey = NavKey.PropertyDetail(id)
+                        if (backStack.lastOrNull() != detailKey) {
+                            backStack.add(detailKey)
+                        }
+                    },
                     onListClick = {
                         backStack.clear()
                         backStack.add(NavKey.PropertyList)
