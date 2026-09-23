@@ -16,11 +16,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lieruce.realestatemanager.data.model.PropertyConstants
+import com.lieruce.realestatemanager.ui.viewmodel.DateFilterOption
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 
 /**
- * SearchScreen allows agents to filter real estate properties by type, agent, price range,
- * surface area, required amenities, and required points of interest, displaying live matching search results.
+ * SearchScreen allows agents to filter real estate properties by type, agent, area, date range,
+ * price range, surface area, minimum pictures, required amenities, and required points of interest,
+ * displaying live matching search results.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +43,7 @@ fun SearchScreen(
     // Control states for dropdown menus
     var typeExpanded by remember { mutableStateOf(false) }
     var agentExpanded by remember { mutableStateOf(false) }
+    var dateExpanded by remember { mutableStateOf(false) }
 
     // Find selected agent name for display in the dropdown
     val ALL_AGENTS_LABEL = "All Agents"
@@ -171,7 +174,64 @@ fun SearchScreen(
                 }
             }
 
-            // 3. Price Range Filter Inputs
+            // 3. Area / Neighborhood text query input
+            item {
+                OutlinedTextField(
+                    value = viewModel.searchAreaQuery,
+                    onValueChange = { viewModel.searchAreaQuery = it },
+                    label = { Text("Filter by Area / Neighborhood (e.g. Long Island, Manhattan)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            }
+
+            // 4. Date Creation Filter Dropdown
+            item {
+                ExposedDropdownMenuBox(
+                    expanded = dateExpanded,
+                    onExpandedChange = { dateExpanded = !dateExpanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = viewModel.searchDateFilter.label,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Filter by Creation Date") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = dateExpanded,
+                        onDismissRequest = { dateExpanded = false }
+                    ) {
+                        DateFilterOption.entries.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option.label) },
+                                onClick = {
+                                    viewModel.searchDateFilter = option
+                                    dateExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 5. Minimum Pictures Filter Input
+            item {
+                OutlinedTextField(
+                    value = viewModel.searchMinPictures,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMinPictures = it },
+                    label = { Text("Minimum Number of Pictures (e.g. 3)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+            }
+
+            // 6. Price Range Filter Inputs
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -191,7 +251,7 @@ fun SearchScreen(
                 }
             }
 
-            // 4. Surface Range Filter Inputs
+            // 7. Surface Range Filter Inputs
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -211,7 +271,7 @@ fun SearchScreen(
                 }
             }
 
-            // 5. Required Amenities Filter Chips
+            // 8. Required Amenities Filter Chips
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -241,7 +301,7 @@ fun SearchScreen(
                 }
             }
 
-            // 6. Required Points of Interest Filter Chips
+            // 9. Required Points of Interest Filter Chips
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -271,7 +331,7 @@ fun SearchScreen(
                 }
             }
 
-            // 7. Results Header
+            // 10. Results Header
             item {
                 Text(
                     text = "Matching Properties (${filteredProperties.size})",
@@ -280,7 +340,7 @@ fun SearchScreen(
                 )
             }
 
-            // 8. Filtered Results List using PropertyItem
+            // 11. Filtered Results List using PropertyItem
             items(filteredProperties) { propertyWithRelations ->
                 PropertyItem(
                     propertyWithRelations = propertyWithRelations,

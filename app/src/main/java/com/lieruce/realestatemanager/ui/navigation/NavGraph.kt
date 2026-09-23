@@ -7,10 +7,16 @@ import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.lieruce.realestatemanager.ui.screens.*
@@ -18,7 +24,8 @@ import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 
 /**
  * Navigation 3 graph defining screen routing and adaptive layouts.
- * Uses type-safe NavKey objects and supports side-by-side list-detail views on tablets.
+ * Uses type-safe NavKey objects and supports side-by-side list-detail views on tablets,
+ * automatically pre-selecting the first property on wide screens (>= 600dp).
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -31,6 +38,26 @@ fun RealEstateNavGraph(
     
     // Adaptive scene strategy that automatically shows list and detail side-by-side on wide screens (tablets/foldables)
     val listDetailStrategy = rememberListDetailSceneStrategy<Any>()
+    
+    // Observe all properties to check when they load from the database
+    val properties by viewModel.allProperties.collectAsStateWithLifecycle()
+
+    // Get current window container size and density to calculate width in DP reactively without configuration warnings
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val screenWidthDp = with(density) { windowInfo.containerSize.width.toDp() }
+    val isWideScreen = screenWidthDp >= 600.dp
+
+    // On wide screens (tablets), automatically pre-select the first property on startup so the detail pane isn't empty
+    LaunchedEffect(properties, isWideScreen) {
+        if (isWideScreen && properties.isNotEmpty() && backStack.size == 1 && backStack.first() == NavKey.PropertyList) {
+            val firstId = properties.first().property.id
+            val detailKey = NavKey.PropertyDetail(firstId)
+            if (!backStack.contains(detailKey)) {
+                backStack.add(detailKey)
+            }
+        }
+    }
     
     // NavDisplay renders the current screen based on the backstack
     NavDisplay(
@@ -91,10 +118,10 @@ fun RealEstateNavGraph(
                 PropertyMapScreen(
                     viewModel = viewModel,
                     onPropertyClick = { id ->
-                        val detailKey = NavKey.PropertyDetail(id)
-                        if (backStack.lastOrNull() != detailKey) {
-                            backStack.add(detailKey)
-                        }
+                        // Restore master-detail split when tapping a pin on the map
+                        backStack.clear()
+                        backStack.add(NavKey.PropertyList)
+                        backStack.add(NavKey.PropertyDetail(id))
                     },
                     onListClick = {
                         backStack.clear()
@@ -107,8 +134,10 @@ fun RealEstateNavGraph(
                 )
             }
             
-            // 4. Add or Edit Property Screen
-            entry<NavKey.AddEditProperty> { key ->
+            // 4. Add or Edit Property Screen (Detail pane)
+            entry<NavKey.AddEditProperty>(
+                metadata = ListDetailSceneStrategy.detailPane()
+            ) { key ->
                 AddEditPropertyScreen(
                     propertyId = key.propertyId,
                     viewModel = viewModel,
@@ -121,10 +150,10 @@ fun RealEstateNavGraph(
                 SearchScreen(
                     viewModel = viewModel,
                     onPropertyClick = { id ->
-                        val detailKey = NavKey.PropertyDetail(id)
-                        if (backStack.lastOrNull() != detailKey) {
-                            backStack.add(detailKey)
-                        }
+                        // Restore master-detail split when selecting a property from search
+                        backStack.clear()
+                        backStack.add(NavKey.PropertyList)
+                        backStack.add(NavKey.PropertyDetail(id))
                     },
                     onListClick = {
                         backStack.clear()

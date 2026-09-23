@@ -22,6 +22,16 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 
 /**
+ * Enum representing date range filter options for properties.
+ */
+enum class DateFilterOption(val label: String) {
+    ANY("Any Time"),
+    PAST_2_WEEKS("Past 2 Weeks"),
+    PAST_MONTH("Past Month"),
+    PAST_3_MONTHS("Past 3 Months")
+}
+
+/**
  * PropertyViewModel acts as the bridge between the Data Layer (Repository) and the UI (Compose).
  * It manages property data streams, save operations, test seeding, search/filter states, and geocoding.
  */
@@ -60,6 +70,9 @@ class PropertyViewModel(
     var searchMaxSurface by mutableStateOf("")
     var searchStatus by mutableStateOf<PropertyStatus?>(null)
     var searchAgentId by mutableStateOf<Long?>(null)
+    var searchAreaQuery by mutableStateOf("")
+    var searchDateFilter by mutableStateOf(DateFilterOption.ANY)
+    var searchMinPictures by mutableStateOf("")
     val searchAmenities = mutableStateListOf<String>()
     val searchPois = mutableStateListOf<String>()
 
@@ -75,6 +88,29 @@ class PropertyViewModel(
 
             // Filter by Agent
             if (searchAgentId != null && prop.agentId != searchAgentId) return@filter false
+
+            // Filter by Area / Neighborhood query (matching address)
+            if (searchAreaQuery.isNotBlank() && !prop.location.address.contains(searchAreaQuery, ignoreCase = true)) {
+                return@filter false
+            }
+
+            // Filter by Date of Creation / Entry Date
+            val now = Instant.now()
+            val cutoffInstant = when (searchDateFilter) {
+                DateFilterOption.ANY -> null
+                DateFilterOption.PAST_2_WEEKS -> now.minusSeconds(86400L * 14)
+                DateFilterOption.PAST_MONTH -> now.minusSeconds(86400L * 30)
+                DateFilterOption.PAST_3_MONTHS -> now.minusSeconds(86400L * 90)
+            }
+            if (cutoffInstant != null && prop.entryDate.isBefore(cutoffInstant)) {
+                return@filter false
+            }
+
+            // Filter by Minimum Number of Pictures
+            val minPics = searchMinPictures.toIntOrNull()
+            if (minPics != null && item.pictures.size < minPics) {
+                return@filter false
+            }
 
             // Filter by Min Price
             val minP = searchMinPrice.toIntOrNull()
@@ -122,6 +158,9 @@ class PropertyViewModel(
         searchMaxSurface = ""
         searchStatus = null
         searchAgentId = null
+        searchAreaQuery = ""
+        searchDateFilter = DateFilterOption.ANY
+        searchMinPictures = ""
         searchAmenities.clear()
         searchPois.clear()
     }

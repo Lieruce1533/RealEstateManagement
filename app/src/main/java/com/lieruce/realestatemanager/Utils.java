@@ -1,6 +1,10 @@
 package com.lieruce.realestatemanager;
 
 import android.content.Context;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.wifi.WifiManager;
 
 import java.text.DateFormat;
@@ -70,7 +74,7 @@ public class Utils {
     }
 
     /**
-     * Vérification de la connexion réseau
+     * Vérification de la connexion réseau (Legacy method kept for backward compatibility/defense)
      * NOTE : NE PAS SUPPRIMER, A MONTRER DURANT LA SOUTENANCE
      * @param context
      * @return
@@ -78,6 +82,53 @@ public class Utils {
     public static Boolean isInternetAvailable(Context context){
         WifiManager wifi = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         return wifi.isWifiEnabled();
+    }
+
+    /**
+     * Modern and reliable network connectivity check using ConnectivityManager and NetworkCapabilities.
+     * Checks for active internet capability and validation across Wi-Fi, Cellular, or Ethernet.
+     * @param context Application or Activity context
+     * @return true if active internet connection is available, false otherwise
+     */
+    public static boolean isInternetAvailableNew(Context context) {
+        if (context == null) return false;
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return false;
+
+        // Get the currently active network connection
+        Network network = connectivityManager.getActiveNetwork();
+        if (network == null) return false;
+
+        // Retrieve network capabilities for the active network
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        if (capabilities == null) return false;
+
+        // Verify transport type (Wi-Fi, Cellular, or Ethernet)
+        boolean hasTransport = capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                               capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                               capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET);
+
+        // Verify internet capability and validated connection
+        boolean hasInternet = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        boolean isValidated = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+
+        return hasTransport && hasInternet && isValidated;
+    }
+
+    /**
+     * Checks whether GPS or Network location providers are enabled on the device.
+     * @param context Application or Activity context
+     * @return true if location services are enabled, false otherwise
+     */
+    public static boolean isGpsEnabled(Context context) {
+        if (context == null) return false;
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null) return false;
+
+        boolean isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        return isGps || isNetwork;
     }
 
 }
