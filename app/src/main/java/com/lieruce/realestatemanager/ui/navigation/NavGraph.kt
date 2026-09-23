@@ -66,7 +66,7 @@ fun RealEstateNavGraph(
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.size - 1) },
         sceneStrategies = listOf(listDetailStrategy),
         entryProvider = entryProvider {
-            // 1. Property List Screen (Master pane) with bottom navigation to Map & Search
+            // 1. Property List Screen (Master pane) with bottom navigation to Map & Search and settings action
             entry<NavKey.PropertyList>(
                 metadata = ListDetailSceneStrategy.listPane(
                     detailPlaceholder = {
@@ -95,6 +95,9 @@ fun RealEstateNavGraph(
                     onSearchClick = {
                         backStack.clear()
                         backStack.add(NavKey.Search)
+                    },
+                    onSettingsClick = {
+                        backStack.add(NavKey.Settings)
                     }
                 )
             }
@@ -118,10 +121,10 @@ fun RealEstateNavGraph(
                 PropertyMapScreen(
                     viewModel = viewModel,
                     onPropertyClick = { id ->
-                        // Restore master-detail split when tapping a pin on the map
-                        backStack.clear()
-                        backStack.add(NavKey.PropertyList)
-                        backStack.add(NavKey.PropertyDetail(id))
+                        val detailKey = NavKey.PropertyDetail(id)
+                        if (backStack.lastOrNull() != detailKey) {
+                            backStack.add(detailKey)
+                        }
                     },
                     onListClick = {
                         backStack.clear()
@@ -163,6 +166,14 @@ fun RealEstateNavGraph(
                         backStack.clear()
                         backStack.add(NavKey.PropertyMap)
                     }
+                )
+            }
+
+            // 6. Presentation Settings Screen
+            entry<NavKey.Settings> {
+                SettingsScreen(
+                    viewModel = viewModel,
+                    onBackClick = { backStack.removeAt(backStack.size - 1) }
                 )
             }
         }

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lieruce.realestatemanager.R
 import com.lieruce.realestatemanager.Utils
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -30,8 +31,8 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 /**
  * PropertyMapScreen displays an interactive OpenStreetMap (osmdroid) 
- * showing property markers and the agent's live GPS location, strictly verifying
- * that both Internet access and GPS location services are enabled.
+ * showing property markers and the agent's live or simulated GPS location,
+ * verifying internet connectivity and GPS services.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,13 +138,17 @@ fun PropertyMapScreen(
                         // Enable pinch-to-zoom and multi-touch gestures
                         setMultiTouchControls(true)
                         // Center map on New York City by default with a good overview zoom level
-                        controller.setZoom(12.0)
+                        controller.setZoom(13.0)
                         controller.setCenter(GeoPoint(40.7128, -74.0060)) // New York City coordinates
 
-                        // If location permission is granted, add the live agent position blue dot overlay
-                        if (hasLocationPermission) {
+                        // If mock GPS is enabled in settings, center on NYC and add a simulated agent marker
+                        if (viewModel.isMockGpsEnabled) {
+                            val nycPoint = GeoPoint(40.7128, -74.0060)
+                            controller.setCenter(nycPoint)
+                        } else if (hasLocationPermission) {
+                            // Otherwise use real device GPS location overlay
                             val myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(ctx), this).apply {
-                                enableMyLocation() // Enables pulsing blue dot for agent current position
+                                enableMyLocation()
                                 enableFollowLocation()
                             }
                             overlays.add(myLocationOverlay)
@@ -151,9 +156,24 @@ fun PropertyMapScreen(
                     }
                 },
                 update = { mapView ->
-                    // Remove existing property markers (keeping index 0 which is typically the MyLocationOverlay if present)
+                    // Clear previous property and agent markers
                     val overlaysToRemove = mapView.overlays.filterIsInstance<Marker>()
                     mapView.overlays.removeAll(overlaysToRemove)
+
+                    // If mock GPS is enabled, add simulated agent marker at NYC center
+                    if (viewModel.isMockGpsEnabled) {
+                        val nycPoint = GeoPoint(40.7128, -74.0060)
+                        mapView.controller.setCenter(nycPoint)
+                        val agentMarker = Marker(mapView).apply {
+                            position = nycPoint
+                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                            title = "Agent Position (Simulated)"
+                            snippet = "New York, NY"
+                            // Explicitly assign professional agent pin vector drawable to guarantee marker rendering
+                            icon = ContextCompat.getDrawable(mapView.context, R.drawable.ic_agent_pin)
+                        }
+                        mapView.overlays.add(agentMarker)
+                    }
 
                     // Add a marker for each property that has valid GPS coordinates
                     for (propertyWithRelations in properties) {

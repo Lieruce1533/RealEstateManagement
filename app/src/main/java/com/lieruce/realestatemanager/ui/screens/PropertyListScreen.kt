@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +41,7 @@ fun PropertyListScreen(
     onAddClick: () -> Unit,
     onMapClick: () -> Unit,
     onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // collectAsStateWithLifecycle connects the ViewModel's Flow to Compose state.
@@ -53,6 +55,7 @@ fun PropertyListScreen(
         onAddClick = onAddClick,
         onMapClick = onMapClick,
         onSearchClick = onSearchClick,
+        onSettingsClick = onSettingsClick,
         modifier = modifier
     )
 }
@@ -70,11 +73,20 @@ fun PropertyListContent(
     onAddClick: () -> Unit,
     onMapClick: () -> Unit,
     onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Real Estate Manager") })
+            TopAppBar(
+                title = { Text("Real Estate Manager") },
+                actions = {
+                    // Settings button in top app bar to open presentation settings
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
@@ -249,7 +261,8 @@ fun PropertyListContentPreview() {
             onPropertyClick = {},
             onAddClick = {},
             onMapClick = {},
-            onSearchClick = {}
+            onSearchClick = {},
+            onSettingsClick = {}
         )
     }
 }
@@ -263,7 +276,8 @@ fun PropertyListEmptyPreview() {
             onPropertyClick = {},
             onAddClick = {},
             onMapClick = {},
-            onSearchClick = {}
+            onSearchClick = {},
+            onSettingsClick = {}
         )
     }
 }

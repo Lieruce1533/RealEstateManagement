@@ -32,4 +32,8 @@ sealed interface NavKey {
     // Search filter screen
     @Serializable
     data object Search : NavKey
+
+    // Presentation settings screen for currency and mock GPS preferences
+    @Serializable
+    data object Settings : NavKey
 }
