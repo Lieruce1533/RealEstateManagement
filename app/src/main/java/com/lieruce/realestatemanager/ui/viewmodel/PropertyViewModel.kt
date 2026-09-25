@@ -15,6 +15,7 @@ import com.lieruce.realestatemanager.data.model.PropertyPicture
 import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.data.model.PropertyWithRelations
 import com.lieruce.realestatemanager.data.model.RealEstateItem
+import com.lieruce.realestatemanager.ui.navigation.NavKey
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -39,6 +40,12 @@ class PropertyViewModel(
     private val repository: PropertyRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
+
+    /**
+     * Navigation backstack stored in the ViewModel so that screen navigation state
+     * survives configuration changes (such as device rotation between phone and tablet modes).
+     */
+    val backStack = mutableStateListOf<Any>(NavKey.PropertyList)
 
     /**
      * allProperties is a StateFlow emitting a live list of properties with their full normalized relations.
@@ -90,6 +97,7 @@ class PropertyViewModel(
 
             // Filter by Property Type
             if (searchType != null && prop.type != searchType) return@filter false
+
 
             // Filter by Agent
             if (searchAgentId != null && prop.agentId != searchAgentId) return@filter false

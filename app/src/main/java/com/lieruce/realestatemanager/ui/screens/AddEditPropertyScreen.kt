@@ -138,6 +138,19 @@ fun AddEditPropertyScreen(
                         val latToSave = if (addressChanged) null else existingProperty?.property?.location?.latitude
                         val lonToSave = if (addressChanged) null else existingProperty?.property?.location?.longitude
 
+                        // Determine saleDate: if newly marked as SOLD, set to Instant.now(), otherwise preserve or nullify
+                        val previousStatus = existingProperty?.property?.status
+                        val calculatedSaleDate = when {
+                            status == PropertyStatus.SOLD -> {
+                                if (previousStatus == PropertyStatus.SOLD) {
+                                    existingProperty?.property?.saleDate
+                                } else {
+                                    Instant.now()
+                                }
+                            }
+                            else -> null
+                        }
+
                         // Build the RealEstateItem entity
                         val newItem = RealEstateItem(
                             id = propertyId ?: 0L,
@@ -153,6 +166,7 @@ fun AddEditPropertyScreen(
                             ),
                             status = status,
                             entryDate = existingProperty?.property?.entryDate ?: Instant.now(),
+                            saleDate = calculatedSaleDate,
                             agentId = existingProperty?.property?.agentId ?: 1L // Default to Agent Smith (id = 1)
                         )
                         

@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lieruce.realestatemanager.data.model.PropertyConstants
+import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.ui.viewmodel.DateFilterOption
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 
@@ -42,6 +43,7 @@ fun SearchScreen(
 
     // Control states for dropdown menus
     var typeExpanded by remember { mutableStateOf(false) }
+    var statusExpanded by remember { mutableStateOf(false) }
     var agentExpanded by remember { mutableStateOf(false) }
     var dateExpanded by remember { mutableStateOf(false) }
 
@@ -126,6 +128,46 @@ fun SearchScreen(
                                 onClick = {
                                     viewModel.searchType = option
                                     typeExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            // 2. Property Status Dropdown Filter
+            item {
+                ExposedDropdownMenuBox(
+                    expanded = statusExpanded,
+                    onExpandedChange = { statusExpanded = !statusExpanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = viewModel.searchStatus?.name ?: "All Status",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Filter by Property Status") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = statusExpanded,
+                        onDismissRequest = { statusExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("All Status") },
+                            onClick = {
+                                viewModel.searchStatus = null
+                                statusExpanded = false
+                            }
+                        )
+                        PropertyStatus.entries.forEach { status ->
+                            DropdownMenuItem(
+                                text = { Text(status.name) },
+                                onClick = {
+                                    viewModel.searchStatus = status
+                                    statusExpanded = false
                                 }
                             )
                         }

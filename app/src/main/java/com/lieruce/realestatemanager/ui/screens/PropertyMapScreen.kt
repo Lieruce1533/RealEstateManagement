@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lieruce.realestatemanager.R
 import com.lieruce.realestatemanager.Utils
+import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -138,7 +139,7 @@ fun PropertyMapScreen(
                         // Enable pinch-to-zoom and multi-touch gestures
                         setMultiTouchControls(true)
                         // Center map on New York City by default with a good overview zoom level
-                        controller.setZoom(13.0)
+                        controller.setZoom(14.5)
                         controller.setCenter(GeoPoint(40.7128, -74.0060)) // New York City coordinates
 
                         // If mock GPS is enabled in settings, center on NYC and add a simulated agent marker
@@ -183,16 +184,29 @@ fun PropertyMapScreen(
 
                         if (lat != null && lon != null) {
                             val point = GeoPoint(lat, lon)
+                            
+                            // Choose green house pin for available properties, red house pin for sold properties
+                            val markerIcon = if (property.status == PropertyStatus.SOLD) {
+                                ContextCompat.getDrawable(mapView.context, R.drawable.ic_property_marker_sold)
+                            } else {
+                                ContextCompat.getDrawable(mapView.context, R.drawable.ic_property_marker_available)
+                            }
+
                             val marker = Marker(mapView).apply {
                                 position = point
                                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                                title = property.type
+                                title = "${property.type} (${property.status.name})"
                                 snippet = "$${property.priceInDollars} - ${property.location.address}"
+                                icon = markerIcon
                                 
-                                // Set listener to navigate to property detail when marker is tapped
+                                // Set listener: first tap shows info window (title & snippet), second tap opens detail screen
                                 setOnMarkerClickListener { clickedMarker, _ ->
-                                    clickedMarker.showInfoWindow()
-                                    onPropertyClick(property.id)
+                                    if (!clickedMarker.isInfoWindowShown) {
+                                        clickedMarker.showInfoWindow()
+                                    } else {
+                                        clickedMarker.closeInfoWindow()
+                                        onPropertyClick(property.id)
+                                    }
                                     true
                                 }
                             }

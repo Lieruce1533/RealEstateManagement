@@ -9,7 +9,6 @@ import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneSt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,8 +32,8 @@ fun RealEstateNavGraph(
     viewModel: PropertyViewModel,
     modifier: Modifier = Modifier,
 ) {
-    // The navigation backstack storing active navigation keys (starting with PropertyList)
-    val backStack = remember { mutableStateListOf<Any>(NavKey.PropertyList) }
+    // The navigation backstack is retained in the ViewModel so it survives screen rotation
+    val backStack = viewModel.backStack
     
     // Adaptive scene strategy that automatically shows list and detail side-by-side on wide screens (tablets/foldables)
     val listDetailStrategy = rememberListDetailSceneStrategy<Any>()

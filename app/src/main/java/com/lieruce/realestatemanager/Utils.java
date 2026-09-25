@@ -1,5 +1,6 @@
 package com.lieruce.realestatemanager;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -9,7 +10,7 @@ import android.net.wifi.WifiManager;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -63,13 +64,13 @@ public class Utils {
      * @return
      */
     public static String getTodayDateOld(){
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        @SuppressLint("SimpleDateFormat") DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         return dateFormat.format(new Date());
     }
     public static String getTodayDateNew(){
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate today = LocalDate.now();
-        return today.format(df);
+        Instant today = Instant.now();
+        return df.format(today);
 
     }
 
