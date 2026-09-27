@@ -26,7 +26,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun RealEstateManagerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    // Dynamic color is available on Android 12+ (set to false to strictly follow Color.kt palette)
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {

@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.lieruce.realestatemanager.data.model.PropertyPicture
 import com.lieruce.realestatemanager.data.model.PropertyStatus
+import com.lieruce.realestatemanager.ui.theme.PurpleGrey80
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -65,6 +66,8 @@ fun PropertyDetailScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Property Details") },
+
+
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -182,7 +185,7 @@ fun PropertyDetailScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = NumberFormat.getCurrencyInstance(Locale.US).format(property.priceInDollars),
+                            text = viewModel.formatPrice(property.priceInDollars),
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.primary
                         )

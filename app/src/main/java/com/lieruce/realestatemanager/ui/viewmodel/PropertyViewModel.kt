@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.lieruce.realestatemanager.Utils
 import com.lieruce.realestatemanager.data.LocationRepository
 import com.lieruce.realestatemanager.data.PropertyRepository
 import com.lieruce.realestatemanager.data.model.Agent
@@ -20,7 +21,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.time.Instant
+import java.util.Locale
 
 /**
  * Enum representing date range filter options for properties.
@@ -71,6 +74,19 @@ class PropertyViewModel(
     // PRESENTATION SETTINGS STATES
     // ============================================================================
     var isMockGpsEnabled by mutableStateOf(false)
+    var isEuroCurrency by mutableStateOf(false)
+
+    /**
+     * Formats property price into Dollars ($) or Euros (€) using Utils conversion rates.
+     */
+    fun formatPrice(priceInDollars: Int): String {
+        return if (isEuroCurrency) {
+            val euros = Utils.convertDollarToEuro(priceInDollars)
+            "€${NumberFormat.getNumberInstance(Locale.US).format(euros)}"
+        } else {
+            NumberFormat.getCurrencyInstance(Locale.US).format(priceInDollars)
+        }
+    }
 
     // ============================================================================
     // SEARCH & FILTER STATES
@@ -185,11 +201,14 @@ class PropertyViewModel(
 
     /**
      * Saves a property (either inserting a new one or updating an existing one).
-     * Automatically geocodes the address into GPS coordinates if latitude or longitude is missing.
+     * Automatically geocodes the address into GPS coordinates if latitude or longitude is missing,
+     * and persists associated pictures, amenities, and POIs.
      */
     fun saveProperty(
         property: RealEstateItem,
-        pictures: List<PropertyPicture>
+        pictures: List<PropertyPicture>,
+        amenityNames: List<String>,
+        poiNames: List<String>
     ) {
         viewModelScope.launch {
             var propertyToSave = property
@@ -207,9 +226,9 @@ class PropertyViewModel(
             }
 
             if (propertyToSave.id == 0L) {
-                repository.insertProperty(propertyToSave, pictures)
+                repository.insertProperty(propertyToSave, pictures, amenityNames, poiNames)
             } else {
-                repository.updateProperty(propertyToSave, pictures)
+                repository.updateProperty(propertyToSave, pictures, amenityNames, poiNames)
             }
         }
     }

@@ -196,7 +196,7 @@ fun PropertyMapScreen(
                                 position = point
                                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                                 title = "${property.type} (${property.status.name})"
-                                snippet = "$${property.priceInDollars} - ${property.location.address}"
+                                snippet = "${viewModel.formatPrice(property.priceInDollars)} - ${property.location.address}"
                                 icon = markerIcon
                                 
                                 // Set listener: first tap shows info window (title & snippet), second tap opens detail screen

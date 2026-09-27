@@ -23,7 +23,7 @@ import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 /**
  * SearchScreen allows agents to filter real estate properties by type, agent, area, date range,
  * price range, surface area, minimum pictures, required amenities, and required points of interest,
- * displaying live matching search results.
+ * displaying live matching search results inside a card-optimized dashboard layout.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,286 +94,343 @@ fun SearchScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Property Type Dropdown Filter
+            // Card 1: General Search & Filter Criteria
             item {
-                ExposedDropdownMenuBox(
-                    expanded = typeExpanded,
-                    onExpandedChange = { typeExpanded = !typeExpanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = viewModel.searchType ?: "All Types",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Filter by Property Type") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = typeExpanded,
-                        onDismissRequest = { typeExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("All Types") },
-                            onClick = {
-                                viewModel.searchType = null
-                                typeExpanded = false
-                            }
-                        )
-                        PropertyConstants.PROPERTY_TYPES.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    viewModel.searchType = option
-                                    typeExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-            // 2. Property Status Dropdown Filter
-            item {
-                ExposedDropdownMenuBox(
-                    expanded = statusExpanded,
-                    onExpandedChange = { statusExpanded = !statusExpanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = viewModel.searchStatus?.name ?: "All Status",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Filter by Property Status") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = statusExpanded,
-                        onDismissRequest = { statusExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("All Status") },
-                            onClick = {
-                                viewModel.searchStatus = null
-                                statusExpanded = false
-                            }
-                        )
-                        PropertyStatus.entries.forEach { status ->
-                            DropdownMenuItem(
-                                text = { Text(status.name) },
-                                onClick = {
-                                    viewModel.searchStatus = status
-                                    statusExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 2. Agent Filter Dropdown
-            item {
-                ExposedDropdownMenuBox(
-                    expanded = agentExpanded,
-                    onExpandedChange = { agentExpanded = !agentExpanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = selectedAgentName,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Filter by Agent") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = agentExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = agentExpanded,
-                        onDismissRequest = { agentExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(ALL_AGENTS_LABEL) },
-                            onClick = {
-                                viewModel.searchAgentId = null
-                                agentExpanded = false
-                            }
-                        )
-                        allAgents.forEach { agent ->
-                            DropdownMenuItem(
-                                text = { Text(agent.name) },
-                                onClick = {
-                                    viewModel.searchAgentId = agent.id
-                                    agentExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 3. Area / Neighborhood text query input
-            item {
-                OutlinedTextField(
-                    value = viewModel.searchAreaQuery,
-                    onValueChange = { viewModel.searchAreaQuery = it },
-                    label = { Text("Filter by Area / Neighborhood (e.g. Long Island, Manhattan)") },
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-            }
-
-            // 4. Date Creation Filter Dropdown
-            item {
-                ExposedDropdownMenuBox(
-                    expanded = dateExpanded,
-                    onExpandedChange = { dateExpanded = !dateExpanded },
-                    modifier = Modifier.fillMaxWidth()
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    OutlinedTextField(
-                        value = viewModel.searchDateFilter.label,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Filter by Creation Date") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateExpanded) },
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = dateExpanded,
-                        onDismissRequest = { dateExpanded = false }
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        DateFilterOption.entries.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option.label) },
-                                onClick = {
-                                    viewModel.searchDateFilter = option
-                                    dateExpanded = false
+                        Text(
+                            text = "General Criteria",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        // Property Type Dropdown Filter
+                        ExposedDropdownMenuBox(
+                            expanded = typeExpanded,
+                            onExpandedChange = { typeExpanded = !typeExpanded },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = viewModel.searchType ?: "All Types",
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Filter by Property Type") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = typeExpanded,
+                                onDismissRequest = { typeExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("All Types") },
+                                    onClick = {
+                                        viewModel.searchType = null
+                                        typeExpanded = false
+                                    }
+                                )
+                                PropertyConstants.PROPERTY_TYPES.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            viewModel.searchType = option
+                                            typeExpanded = false
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
+
+                        // Property Status Dropdown Filter
+                        ExposedDropdownMenuBox(
+                            expanded = statusExpanded,
+                            onExpandedChange = { statusExpanded = !statusExpanded },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = viewModel.searchStatus?.name ?: "All Status",
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Filter by Property Status") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = statusExpanded,
+                                onDismissRequest = { statusExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("All Status") },
+                                    onClick = {
+                                        viewModel.searchStatus = null
+                                        statusExpanded = false
+                                    }
+                                )
+                                PropertyStatus.entries.forEach { status ->
+                                    DropdownMenuItem(
+                                        text = { Text(status.name) },
+                                        onClick = {
+                                            viewModel.searchStatus = status
+                                            statusExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Agent Filter Dropdown
+                        ExposedDropdownMenuBox(
+                            expanded = agentExpanded,
+                            onExpandedChange = { agentExpanded = !agentExpanded },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = selectedAgentName,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Filter by Agent") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = agentExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = agentExpanded,
+                                onDismissRequest = { agentExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(ALL_AGENTS_LABEL) },
+                                    onClick = {
+                                        viewModel.searchAgentId = null
+                                        agentExpanded = false
+                                    }
+                                )
+                                allAgents.forEach { agent ->
+                                    DropdownMenuItem(
+                                        text = { Text(agent.name) },
+                                        onClick = {
+                                            viewModel.searchAgentId = agent.id
+                                            agentExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Area / Neighborhood text query input
+                        OutlinedTextField(
+                            value = viewModel.searchAreaQuery,
+                            onValueChange = { viewModel.searchAreaQuery = it },
+                            label = { Text("Area / Neighborhood (e.g. Long Island)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        // Date Creation Filter Dropdown
+                        ExposedDropdownMenuBox(
+                            expanded = dateExpanded,
+                            onExpandedChange = { dateExpanded = !dateExpanded },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = viewModel.searchDateFilter.label,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Filter by Creation Date") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = dateExpanded,
+                                onDismissRequest = { dateExpanded = false }
+                            ) {
+                                DateFilterOption.entries.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option.label) },
+                                        onClick = {
+                                            viewModel.searchDateFilter = option
+                                            dateExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Minimum Pictures Filter Input
+                        OutlinedTextField(
+                            value = viewModel.searchMinPictures,
+                            onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMinPictures = it },
+                            label = { Text("Minimum Pictures (e.g. 3)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true
+                        )
                     }
                 }
             }
 
-            // 5. Minimum Pictures Filter Input
+            // Card 2: Price & Dimensions
             item {
-                OutlinedTextField(
-                    value = viewModel.searchMinPictures,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMinPictures = it },
-                    label = { Text("Minimum Number of Pictures (e.g. 3)") },
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true
-                )
-            }
-
-            // 6. Price Range Filter Inputs
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = viewModel.searchMinPrice,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMinPrice = it },
-                        label = { Text("Min Price ($)") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-                    OutlinedTextField(
-                        value = viewModel.searchMaxPrice,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMaxPrice = it },
-                        label = { Text("Max Price ($)") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-                }
-            }
-
-            // 7. Surface Range Filter Inputs
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = viewModel.searchMinSurface,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMinSurface = it },
-                        label = { Text("Min Surface (m²)") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-                    OutlinedTextField(
-                        value = viewModel.searchMaxSurface,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMaxSurface = it },
-                        label = { Text("Max Surface (m²)") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-                }
-            }
-
-            // 8. Required Amenities Filter Chips
-            item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Required Amenities",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        PropertyConstants.AVAILABLE_AMENITIES.forEach { amenity ->
-                            FilterChip(
-                                selected = viewModel.searchAmenities.contains(amenity),
-                                onClick = {
-                                    if (viewModel.searchAmenities.contains(amenity)) {
-                                        viewModel.searchAmenities.remove(amenity)
-                                    } else {
-                                        viewModel.searchAmenities.add(amenity)
-                                    }
-                                },
-                                label = { Text(amenity) }
+                        Text(
+                            text = "Price & Dimensions",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = viewModel.searchMinPrice,
+                                onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMinPrice = it },
+                                label = { Text("Min Price ($)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.searchMaxPrice,
+                                onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMaxPrice = it },
+                                label = { Text("Max Price ($)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = viewModel.searchMinSurface,
+                                onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMinSurface = it },
+                                label = { Text("Min Surface (m²)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.searchMaxSurface,
+                                onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.searchMaxSurface = it },
+                                label = { Text("Max Surface (m²)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                             )
                         }
                     }
                 }
             }
 
-            // 9. Required Points of Interest Filter Chips
+            // Card 3: Required Amenities Filter Chips
             item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Required Points of Interest",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        PropertyConstants.AVAILABLE_POIS.forEach { poi ->
-                            FilterChip(
-                                selected = viewModel.searchPois.contains(poi),
-                                onClick = {
-                                    if (viewModel.searchPois.contains(poi)) {
-                                        viewModel.searchPois.remove(poi)
-                                    } else {
-                                        viewModel.searchPois.add(poi)
-                                    }
-                                },
-                                label = { Text(poi) }
-                            )
+                        Text(
+                            text = "Required Amenities",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            PropertyConstants.AVAILABLE_AMENITIES.forEach { amenity ->
+                                FilterChip(
+                                    selected = viewModel.searchAmenities.contains(amenity),
+                                    onClick = {
+                                        if (viewModel.searchAmenities.contains(amenity)) {
+                                            viewModel.searchAmenities.remove(amenity)
+                                        } else {
+                                            viewModel.searchAmenities.add(amenity)
+                                        }
+                                    },
+                                    label = { Text(amenity) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            // 10. Results Header
+            // Card 4: Required Points of Interest Filter Chips
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Required Points of Interest",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            PropertyConstants.AVAILABLE_POIS.forEach { poi ->
+                                FilterChip(
+                                    selected = viewModel.searchPois.contains(poi),
+                                    onClick = {
+                                        if (viewModel.searchPois.contains(poi)) {
+                                            viewModel.searchPois.remove(poi)
+                                        } else {
+                                            viewModel.searchPois.add(poi)
+                                        }
+                                    },
+                                    label = { Text(poi) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Results Header
             item {
                 Text(
                     text = "Matching Properties (${filteredProperties.size})",
@@ -382,10 +439,11 @@ fun SearchScreen(
                 )
             }
 
-            // 11. Filtered Results List using PropertyItem
+            // Filtered Results List using PropertyItem
             items(filteredProperties) { propertyWithRelations ->
                 PropertyItem(
                     propertyWithRelations = propertyWithRelations,
+                    formattedPrice = viewModel.formatPrice(propertyWithRelations.property.priceInDollars),
                     onClick = { onPropertyClick(propertyWithRelations.property.id) }
                 )
             }

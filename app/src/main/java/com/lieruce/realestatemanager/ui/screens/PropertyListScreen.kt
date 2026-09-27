@@ -26,9 +26,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.lieruce.realestatemanager.R
 import com.lieruce.realestatemanager.data.model.*
+import com.lieruce.realestatemanager.ui.theme.PurpleGrey80
 import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import java.text.NumberFormat
 import java.time.Instant
+import java.util.*
 
 /**
  * Stateful wrapper for PropertyListScreen.
@@ -51,6 +54,7 @@ fun PropertyListScreen(
     // Delegate UI rendering to the stateless content composable so it can be previewed
     PropertyListContent(
         properties = properties,
+        formatPrice = { viewModel.formatPrice(it) },
         onPropertyClick = onPropertyClick,
         onAddClick = onAddClick,
         onMapClick = onMapClick,
@@ -69,6 +73,7 @@ fun PropertyListScreen(
 @Composable
 fun PropertyListContent(
     properties: List<PropertyWithRelations>,
+    formatPrice: (Int) -> String,
     onPropertyClick: (Long) -> Unit,
     onAddClick: () -> Unit,
     onMapClick: () -> Unit,
@@ -80,6 +85,7 @@ fun PropertyListContent(
         topBar = {
             TopAppBar(
                 title = { Text("Real Estate Manager") },
+
                 actions = {
                     // Settings button in top app bar to open presentation settings
                     IconButton(onClick = onSettingsClick) {
@@ -140,6 +146,7 @@ fun PropertyListContent(
                 items(properties) { propertyWithRelations ->
                     PropertyItem(
                         propertyWithRelations = propertyWithRelations,
+                        formattedPrice = formatPrice(propertyWithRelations.property.priceInDollars),
                         onClick = { onPropertyClick(propertyWithRelations.property.id) }
                     )
                 }
@@ -155,6 +162,7 @@ fun PropertyListContent(
 @Composable
 fun PropertyItem(
     propertyWithRelations: PropertyWithRelations,
+    formattedPrice: String,
     onClick: () -> Unit
 ) {
     val property = propertyWithRelations.property
@@ -176,7 +184,7 @@ fun PropertyItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // AsyncImage from Coil loads local URIs (gallery/camera) or URLs asynchronously
@@ -184,8 +192,8 @@ fun PropertyItem(
                 model = firstPictureUri ?: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6", // Fallback sample image if no picture attached yet
                 contentDescription = "Property thumbnail",
                 modifier = Modifier
-                    .size(90.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(20.dp)),
                 placeholder = painterResource(R.drawable.ic_launcher_background),
                 error = painterResource(R.drawable.ic_launcher_background)
             )
@@ -199,7 +207,7 @@ fun PropertyItem(
                 Text(text = property.type, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "$${property.priceInDollars}", 
+                    text = formattedPrice, 
                     style = MaterialTheme.typography.bodyLarge, 
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -237,27 +245,9 @@ fun PropertyListContentPreview() {
                     pictures = emptyList(),
                     amenities = listOf(Amenity(id = 1L, name = "Swimming Pool"), Amenity(id = 2L, name = "Gym")),
                     pois = listOf(Poi(id = 1L, name = "Park"), Poi(id = 1L, name = "School"))
-                ),
-                PropertyWithRelations(
-                    property = RealEstateItem(
-                        id = 2L,
-                        type = "Penthouse",
-                        priceInDollars = 950000,
-                        surfaceInSqm = 180,
-                        numberOfRooms = 5,
-                        description = "Luxury downtown penthouse with panoramic views.",
-                        location = PropertyLocation(address = "456 Skyline Ave, Metropolis"),
-                        status = PropertyStatus.SOLD,
-                        entryDate = Instant.now(),
-                        saleDate = Instant.now(),
-                        agentId = 2L
-                    ),
-                    agent = Agent(id = 2L, name = "Agent Jane", email = "jane@realestate.com", phone = "+15558392041"),
-                    pictures = emptyList(),
-                    amenities = listOf(Amenity(id = 3L, name = "Balcony"), Amenity(id = 4L, name = "Terrace")),
-                    pois = listOf(Poi(id = 3L, name = "Subway"), Poi(id = 4L, name = "Mall"))
                 )
             ),
+            formatPrice = { NumberFormat.getCurrencyInstance(Locale.US).format(it) },
             onPropertyClick = {},
             onAddClick = {},
             onMapClick = {},
@@ -273,6 +263,7 @@ fun PropertyListEmptyPreview() {
     RealEstateManagerTheme {
         PropertyListContent(
             properties = emptyList(),
+            formatPrice = { NumberFormat.getCurrencyInstance(Locale.US).format(it) },
             onPropertyClick = {},
             onAddClick = {},
             onMapClick = {},

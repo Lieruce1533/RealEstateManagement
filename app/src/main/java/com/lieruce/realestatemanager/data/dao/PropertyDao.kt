@@ -53,6 +53,18 @@ interface PropertyDao {
     @Query("DELETE FROM property_pictures WHERE propertyId = :propertyId")
     suspend fun deletePicturesForProperty(propertyId: Long)
 
+    @Query("DELETE FROM property_amenities WHERE propertyId = :propertyId")
+    suspend fun deleteAmenityCrossRefsForProperty(propertyId: Long)
+
+    @Query("DELETE FROM property_pois WHERE propertyId = :propertyId")
+    suspend fun deletePoiCrossRefsForProperty(propertyId: Long)
+
+    @Query("SELECT id FROM amenities WHERE name = :name")
+    suspend fun getAmenityIdByName(name: String): Long?
+
+    @Query("SELECT id FROM pois WHERE name = :name")
+    suspend fun getPoiIdByName(name: String): Long?
+
     @Transaction
     @Query("SELECT * FROM real_estate_items")
     fun getAllPropertiesCursor(): Cursor

@@ -89,6 +89,35 @@ fun SettingsScreen(
                     }
                 }
             }
+
+            // Currency Toggle Item
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Display Currency in Euros (€)", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = "Converts all property prices from Dollars ($) to Euros (€).",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = viewModel.isEuroCurrency,
+                            onCheckedChange = { viewModel.isEuroCurrency = it }
+                        )
+                    }
+                }
+            }
         }
     }
 }
