@@ -36,4 +36,8 @@ sealed interface NavKey {
     // Presentation settings screen for currency and mock GPS preferences
     @Serializable
     data object Settings : NavKey
+
+    // Mortgage loan calculator screen. If propertyPrice is provided, it pre-fills the price.
+    @Serializable
+    data class LoanCalculator(val propertyPrice: Int? = null) : NavKey
 }

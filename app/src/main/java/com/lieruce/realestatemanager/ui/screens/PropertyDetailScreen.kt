@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -54,6 +55,7 @@ fun PropertyDetailScreen(
     viewModel: PropertyViewModel,
     onBackClick: () -> Unit,
     onEditClick: (Long) -> Unit,
+    onCalculatorClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Observe the specific property with all its normalized relations reactively from ViewModel
@@ -74,6 +76,12 @@ fun PropertyDetailScreen(
                     }
                 },
                 actions = {
+                    // Mortgage calculator button pre-filled with property price
+                    propertyWithRelations?.let { data ->
+                        IconButton(onClick = { onCalculatorClick(data.property.priceInDollars) }) {
+                            Icon(Icons.Default.Info, contentDescription = "Mortgage Calculator")
+                        }
+                    }
                     IconButton(onClick = { onEditClick(propertyId) }) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit")
                     }

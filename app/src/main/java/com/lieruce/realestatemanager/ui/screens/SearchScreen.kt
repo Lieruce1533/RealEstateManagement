@@ -5,9 +5,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -55,10 +57,15 @@ fun SearchScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Search & Filter (${filteredProperties.size} results)") },
+                navigationIcon = {
+                    IconButton(onClick = onListClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to List")
+                    }
+                },
                 actions = {
-                    // Action button to clear all active search filters
+                    // Action button to reset all active search filters
                     IconButton(onClick = { viewModel.clearFilters() }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear Filters")
+                        Icon(Icons.Default.Refresh, contentDescription = "Reset Filters")
                     }
                 }
             )

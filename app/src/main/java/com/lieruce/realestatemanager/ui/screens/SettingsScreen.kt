@@ -1,5 +1,6 @@
 package com.lieruce.realestatemanager.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -13,13 +14,15 @@ import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 
 /**
  * SettingsScreen provides presentation controls for the defense,
- * including toggling mock GPS positioning for New York City and currency preferences.
+ * including toggling mock GPS positioning for New York City, currency preferences,
+ * and quick access to the mortgage loan calculator.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: PropertyViewModel,
     onBackClick: () -> Unit,
+    onLoanCalculatorClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -57,6 +60,35 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                }
+            }
+
+            // Mortgage Calculator Navigation Card
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onLoanCalculatorClick),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Mortgage Loan Calculator", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Simulate monthly payments, interest rates, and loan terms.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
                     }
                 }
             }

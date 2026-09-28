@@ -111,6 +111,9 @@ fun RealEstateNavGraph(
                     onBackClick = { backStack.removeAt(backStack.size - 1) },
                     onEditClick = { id ->
                         backStack.add(NavKey.AddEditProperty(id))
+                    },
+                    onCalculatorClick = { price ->
+                        backStack.add(NavKey.LoanCalculator(price))
                     }
                 )
             }
@@ -171,6 +174,18 @@ fun RealEstateNavGraph(
             // 6. Presentation Settings Screen
             entry<NavKey.Settings> {
                 SettingsScreen(
+                    viewModel = viewModel,
+                    onBackClick = { backStack.removeAt(backStack.size - 1) },
+                    onLoanCalculatorClick = {
+                        backStack.add(NavKey.LoanCalculator())
+                    }
+                )
+            }
+
+            // 7. Mortgage Loan Calculator Screen
+            entry<NavKey.LoanCalculator> { key ->
+                LoanCalculatorScreen(
+                    initialPrice = key.propertyPrice,
                     viewModel = viewModel,
                     onBackClick = { backStack.removeAt(backStack.size - 1) }
                 )
