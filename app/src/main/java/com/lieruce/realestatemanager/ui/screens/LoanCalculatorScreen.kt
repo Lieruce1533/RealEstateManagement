@@ -15,9 +15,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.lieruce.realestatemanager.Utils
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import com.lieruce.realestatemanager.util.LoanCalculator
 import java.text.NumberFormat
 import java.util.*
-import kotlin.math.pow
 import kotlin.math.roundToLong
 
 /**
@@ -50,26 +50,19 @@ fun LoanCalculatorScreen(
     var interestRateText by remember { mutableStateOf("6.5") }
     var termYearsText by remember { mutableStateOf("30") }
 
+    // Control state for the term years dropdown menu
+    var termExpanded by remember { mutableStateOf(false) }
+
     // Parse numerical values safely
     val price = priceText.toDoubleOrNull() ?: 0.0
     val downPayment = downPaymentText.toDoubleOrNull() ?: 0.0
     val annualInterestRate = interestRateText.toDoubleOrNull() ?: 0.0
     val termYears = termYearsText.toIntOrNull() ?: 30
 
-    // Mortgage calculations
-    val principal = (price - downPayment).coerceAtLeast(0.0)
-    val monthlyInterestRate = (annualInterestRate / 100.0) / 12.0
-    val totalMonths = (termYears * 12).coerceAtLeast(1)
-
-    val monthlyPayment = if (monthlyInterestRate == 0.0) {
-        principal / totalMonths
-    } else {
-        val factor = (1.0 + monthlyInterestRate).pow(totalMonths.toDouble())
-        principal * (monthlyInterestRate * factor) / (factor - 1.0)
+    // Delegate mortgage calculations to pure Kotlin LoanCalculator class
+    val loanResult = remember(price, downPayment, annualInterestRate, termYears) {
+        LoanCalculator.calculateLoan(price, downPayment, annualInterestRate, termYears)
     }
-
-    val totalPayment = monthlyPayment * totalMonths
-    val totalInterest = (totalPayment - principal).coerceAtLeast(0.0)
 
     val currencySymbol = if (isEuros) "€" else "$"
     val currencyFormatter = NumberFormat.getNumberInstance(Locale.US)
@@ -124,7 +117,7 @@ fun LoanCalculatorScreen(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            text = "$currencySymbol${currencyFormatter.format(monthlyPayment.roundToLong())}",
+                            text = "$currencySymbol${currencyFormatter.format(loanResult.monthlyPayment.roundToLong())}",
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -136,13 +129,17 @@ fun LoanCalculatorScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text("Loan Amount", style = MaterialTheme.typography.bodySmall)
+                                Text("$currencySymbol${currencyFormatter.format(loanResult.principal.roundToLong())}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            }
                             Column {
                                 Text("Total Interest", style = MaterialTheme.typography.bodySmall)
-                                Text("$currencySymbol${currencyFormatter.format(totalInterest.roundToLong())}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                Text("$currencySymbol${currencyFormatter.format(loanResult.totalInterest.roundToLong())}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text("Total Loan Cost", style = MaterialTheme.typography.bodySmall)
-                                Text("$currencySymbol${currencyFormatter.format(totalPayment.roundToLong())}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                Text("$currencySymbol${currencyFormatter.format(loanResult.totalPayment.roundToLong())}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -215,7 +212,7 @@ fun LoanCalculatorScreen(
                             singleLine = true
                         )
 
-                        // Row for Interest Rate and Term Years
+                        // Row for Interest Rate and Term Years Dropdown
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = interestRateText,
@@ -225,14 +222,40 @@ fun LoanCalculatorScreen(
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true
                             )
-                            OutlinedTextField(
-                                value = termYearsText,
-                                onValueChange = { if (it.all { char -> char.isDigit() }) termYearsText = it },
-                                label = { Text("Term (Years)") },
-                                modifier = Modifier.weight(1f),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true
-                            )
+
+                            // Term Years Dropdown Menu
+                            ExposedDropdownMenuBox(
+                                expanded = termExpanded,
+                                onExpandedChange = { termExpanded = !termExpanded },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                OutlinedTextField(
+                                    value = "$termYearsText Years",
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text("Term") },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = termExpanded) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true),
+                                    singleLine = true
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = termExpanded,
+                                    onDismissRequest = { termExpanded = false }
+                                ) {
+                                    val terms = listOf("5", "10", "15", "20", "25", "30")
+                                    terms.forEach { term ->
+                                        DropdownMenuItem(
+                                            text = { Text("$term Years") },
+                                            onClick = {
+                                                termYearsText = term
+                                                termExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
