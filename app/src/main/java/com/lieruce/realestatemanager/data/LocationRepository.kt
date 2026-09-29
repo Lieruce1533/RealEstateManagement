@@ -13,7 +13,7 @@ import java.net.URLEncoder
  * LocationRepository handles geocoding using OpenStreetMap's Nominatim API
  * to convert human-readable address strings to GPS latitude/longitude coordinates.
  */
-class LocationRepository(private val context: Context) {
+class LocationRepository(private val context: Context? = null) {
 
     companion object {
         private const val TAG = "LocationRepository"

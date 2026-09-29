@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.lieruce.realestatemanager.R
+import com.lieruce.realestatemanager.Utils
 import com.lieruce.realestatemanager.data.model.*
 import com.lieruce.realestatemanager.ui.theme.PurpleGrey80
 import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
@@ -84,8 +85,16 @@ fun PropertyListContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Real Estate Manager") },
-
+                title = { 
+                    Column {
+                        Text("Real Estate Manager")
+                        Text(
+                            text = "Today: ${Utils.getTodayDateNew()}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 actions = {
                     // Settings button in top app bar to open presentation settings
                     IconButton(onClick = onSettingsClick) {

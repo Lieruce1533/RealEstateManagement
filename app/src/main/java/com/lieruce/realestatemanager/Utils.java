@@ -11,12 +11,15 @@ import android.net.wifi.WifiManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 
 /**
  * Created by Philippe on 21/02/2018.
+ * Modified by Fabien on 18/09/2026.
  */
 
 public class Utils {
@@ -67,11 +70,12 @@ public class Utils {
         @SuppressLint("SimpleDateFormat") DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         return dateFormat.format(new Date());
     }
+
+
     public static String getTodayDateNew(){
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        Instant today = Instant.now();
-        return df.format(today);
-
+        LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+        return today.format(df);
     }
 
     /**

@@ -26,6 +26,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+        }
+    }
     compileOptions {
         // Enable Java 8+ API desugaring support for minSdk < 26
         coreLibraryDesugaringEnabled true
