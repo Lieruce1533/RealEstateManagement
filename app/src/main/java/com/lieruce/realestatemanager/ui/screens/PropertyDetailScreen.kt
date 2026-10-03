@@ -13,8 +13,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -79,7 +80,7 @@ fun PropertyDetailScreen(
                     // Mortgage calculator button pre-filled with property price
                     propertyWithRelations?.let { data ->
                         IconButton(onClick = { onCalculatorClick(data.property.priceInDollars) }) {
-                            Icon(Icons.Default.Info, contentDescription = "Mortgage Calculator")
+                            Icon(Icons.Default.DateRange, contentDescription = "Mortgage Calculator")
                         }
                     }
                     IconButton(onClick = { onEditClick(propertyId) }) {
