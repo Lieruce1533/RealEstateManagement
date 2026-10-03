@@ -1,0 +1,322 @@
+package com.lieruce.realestatemanager.ui.screens
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import com.lieruce.realestatemanager.R
+import com.lieruce.realestatemanager.Utils
+import com.lieruce.realestatemanager.data.model.*
+import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
+import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import java.text.NumberFormat
+import java.time.Instant
+import java.util.*
+
+/**
+ * Stateful wrapper for PropertyListScreen.
+ * It connects to the ViewModel to observe the live Flow of properties from the Room database.
+ */
+@Composable
+fun PropertyListScreen(
+    viewModel: PropertyViewModel,
+    modifier: Modifier = Modifier,
+    selectedPropertyId: Long? = null,
+    onPropertyClick: (Long) -> Unit,
+    onAddClick: () -> Unit,
+    onMapClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    // collectAsStateWithLifecycle connects the ViewModel's Flow to Compose state.
+    // Whenever database records change, this list updates and triggers recomposition.
+    val properties by viewModel.allProperties.collectAsStateWithLifecycle()
+
+    // Delegate UI rendering to the stateless content composable so it can be previewed
+    PropertyListContent(
+        properties = properties,
+        selectedPropertyId = selectedPropertyId,
+        formatPrice = { viewModel.formatPrice(it) },
+        onPropertyClick = onPropertyClick,
+        onAddClick = onAddClick,
+        onMapClick = onMapClick,
+        onSearchClick = onSearchClick,
+        onSettingsClick = onSettingsClick,
+        modifier = modifier
+    )
+}
+
+/**
+ * Stateless UI content for PropertyListScreen.
+ * Purely renders data passed to it without knowing about ViewModels or Databases,
+ * which makes it fully previewable in Android Studio.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PropertyListContent(
+    properties: List<PropertyWithRelations>,
+    selectedPropertyId: Long?,
+    formatPrice: (Int) -> String,
+    onPropertyClick: (Long) -> Unit,
+    onAddClick: () -> Unit,
+    onMapClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Column {
+                        Text("Real Estate Manager")
+                        Text(
+                            text = "Today: ${Utils.getTodayDateNew()}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                actions = {
+                    // Settings button in top app bar to open presentation settings
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAddClick) {
+                Icon(Icons.Default.Add, contentDescription = "Add Property")
+            }
+        },
+        bottomBar = {
+            // Bottom navigation bar to easily switch between List, Map, and Search screens
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "List") },
+                    label = { Text("List") },
+                    selected = true,
+                    onClick = {}
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Place, contentDescription = "Map") },
+                    label = { Text("Map") },
+                    selected = false,
+                    onClick = onMapClick
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    label = { Text("Search") },
+                    selected = false,
+                    onClick = onSearchClick
+                )
+            }
+        }
+    ) { padding ->
+        // Handle empty state vs list display
+        if (properties.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No properties found. Click + to add test data.")
+            }
+        } else {
+            // Compose 101: LazyColumn is the modern replacement for RecyclerView.
+            // It only renders items currently visible on screen for high performance.
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(properties) { propertyWithRelations ->
+                    val isSelected = propertyWithRelations.property.id == selectedPropertyId
+                    PropertyItem(
+                        propertyWithRelations = propertyWithRelations,
+                        formattedPrice = formatPrice(propertyWithRelations.property.priceInDollars),
+                        isSelected = isSelected,
+                        onClick = { onPropertyClick(propertyWithRelations.property.id) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Card item representing an individual real estate property in the list,
+ * displaying its thumbnail image and core details side-by-side in a Row.
+ * Highlights with a distinct background color and border when selected in split-screen mode.
+ */
+@Composable
+fun PropertyItem(
+    propertyWithRelations: PropertyWithRelations,
+    formattedPrice: String,
+    isSelected: Boolean = false,
+    onClick: () -> Unit
+) {
+    val property = propertyWithRelations.property
+    
+    // Grab the URI of the first picture if available, or null otherwise
+    val firstPictureUri = propertyWithRelations.pictures.firstOrNull()?.uri
+    
+    // Distinct styling when selected in split-screen mode
+    val containerColor = if (isSelected) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val borderStroke = if (isSelected) {
+        BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+    } else {
+        BorderStroke(1.dp, Color.White)
+    }
+    
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor,
+        ),
+        border = borderStroke,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 2.dp)
+    ) {
+        // Row places the thumbnail on the left and property details on the right side-by-side
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // AsyncImage from Coil loads local URIs (gallery/camera) or URLs asynchronously
+            AsyncImage(
+                model = firstPictureUri ?: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6", // Fallback sample image if no picture attached yet
+                contentDescription = "Property thumbnail",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(20.dp)),
+                placeholder = painterResource(R.drawable.ic_launcher_background),
+                error = painterResource(R.drawable.ic_launcher_background)
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Property details column
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = property.type, style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = formattedPrice, 
+                    style = MaterialTheme.typography.bodyLarge, 
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(text = property.location.address, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+// ============================================================================
+// COMPOSE PREVIEWS
+// ============================================================================
+
+@Preview(showBackground = true, name = "Property List - With Data")
+@Composable
+fun PropertyListContentPreview() {
+    RealEstateManagerTheme {
+        PropertyListContent(
+            properties = listOf(
+                PropertyWithRelations(
+                    property = RealEstateItem(
+                        id = 1L,
+                        type = "Manor",
+                        priceInDollars = 1500000,
+                        surfaceInSqm = 450,
+                        numberOfRooms = 12,
+                        description = "A historic manor in the countryside.",
+                        location = PropertyLocation(address = "123 Castle Road, Loire Valley"),
+                        status = PropertyStatus.AVAILABLE,
+                        entryDate = Instant.now(),
+                        agentId = 1L
+                    ),
+                    agent = Agent(id = 1L, name = "Agent Smith", email = "smith@realestate.com", phone = "+15550192834"),
+                    pictures = emptyList(),
+                    amenities = listOf(Amenity(id = 1L, name = "Swimming Pool"), Amenity(id = 2L, name = "Gym")),
+                    pois = listOf(Poi(id = 1L, name = "Park"), Poi(id = 1L, name = "School"))
+                ),
+                PropertyWithRelations(
+                    property = RealEstateItem(
+                        id = 2L,
+                        type = "Penthouse",
+                        priceInDollars = 950000,
+                        surfaceInSqm = 180,
+                        numberOfRooms = 5,
+                        description = "Luxury downtown penthouse with panoramic views.",
+                        location = PropertyLocation(address = "456 Skyline Ave, Metropolis"),
+                        status = PropertyStatus.SOLD,
+                        entryDate = Instant.now(),
+                        saleDate = Instant.now(),
+                        agentId = 2L
+                    ),
+                    agent = Agent(id = 2L, name = "Agent Jane", email = "jane@realestate.com", phone = "+15558392041"),
+                    pictures = emptyList(),
+                    amenities = listOf(Amenity(id = 3L, name = "Balcony"), Amenity(id = 4L, name = "Terrace")),
+                    pois = listOf(Poi(id = 3L, name = "Subway"), Poi(id = 4L, name = "Mall"))
+                )
+            ),
+            selectedPropertyId = 1L,
+            formatPrice = { NumberFormat.getCurrencyInstance(Locale.US).format(it) },
+            onPropertyClick = {},
+            onAddClick = {},
+            onMapClick = {},
+            onSearchClick = {},
+            onSettingsClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Property List - Empty State")
+@Composable
+fun PropertyListEmptyPreview() {
+    RealEstateManagerTheme {
+        PropertyListContent(
+            properties = emptyList(),
+            selectedPropertyId = null,
+            formatPrice = { NumberFormat.getCurrencyInstance(Locale.US).format(it) },
+            onPropertyClick = {},
+            onAddClick = {},
+            onMapClick = {},
+            onSearchClick = {},
+            onSettingsClick = {}
+        )
+    }
+}

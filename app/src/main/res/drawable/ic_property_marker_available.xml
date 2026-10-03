@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="42dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+  <!-- Darker Green Teardrop Pin -->
+  <path
+      android:fillColor="#2E7D32"
+      android:pathData="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13c0,-3.87 -3.13,-7 -7,-7z"/>
+
+  <!-- Inner Shifted-Up White Ellipse (Centered higher for uniform top/left/right green border) -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M12,3.2 A5.8,5.5 0 1,2 11.99,3.2 Z"/>
+
+  <!-- Inner Larger Lighter Green House Icon (Scaled up to almost fill the white ellipse) -->
+  <path
+      android:fillColor="#66BB6A"
+      android:pathData="M12,5.2 L8.5,8 V11.2 H15.5 V8 Z M10.5,11.2 V9 H13.5 V11.2 Z"/>
+</vector>
