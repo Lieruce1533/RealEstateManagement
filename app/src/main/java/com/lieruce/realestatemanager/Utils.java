@@ -21,12 +21,10 @@ import java.util.Date;
  * Created by Philippe on 21/02/2018.
  * Modified by Fabien on 18/09/2026.
  */
-
 public class Utils {
 
     private static double dollarEuroRate = 0.812;  // Default Dollar to Euro conversion rate
     private static double euroDollarRate = 1.231;  // Default Euro to Dollar conversion rate
-
     /**
      * Updates the dynamic USD to Euro exchange rate fetched from the API.
      */
@@ -37,40 +35,35 @@ public class Utils {
             euroDollarRate = 1.0 / rate;
         }
     }
-
-
-
     /**
-     * Conversion d'un prix d'un bien immobilier (Dollars vers Euros)
-     * NOTE : NE PAS SUPPRIMER, A MONTRER DURANT LA SOUTENANCE
+     * Conversion du prix d'un bien immobilier (Dollars vers Euros)
      * @param dollars
      * @return
      */
     public static int convertDollarToEuro(int dollars){
         return (int) Math.round(dollars * dollarEuroRate);
     }
-    /**
-     * Conversion d'un prix d'un bien immobilier (Euros vers Dollars)Euros)
-     * NOTE : NE PAS SUPPRIMER, A MONTRER DURANT LA SOUTENANCE
+    /** ---------------------------------------------------------------
+     * Conversion du prix d'un bien immobilier (Euros vers Dollars)Euros)
      * @param euros
      * @return
      */
-
     public static int convertEuroToDollar(int euros){
         return (int) Math.round(euros * euroDollarRate);
     }
 
-
     /**
      * Conversion de la date d'aujourd'hui en un format plus approprié
-     * NOTE : NE PAS SUPPRIMER, A MONTRER DURANT LA SOUTENANCE
      * @return
      */
     public static String getTodayDateOld(){
         @SuppressLint("SimpleDateFormat") DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         return dateFormat.format(new Date());
     }
-
+    /** --------------------------------------------------------------
+     * Conversion de la date d'aujourd'hui en un format plus approprié
+     * @return
+     */
 
     public static String getTodayDateNew(){
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -80,7 +73,6 @@ public class Utils {
 
     /**
      * Vérification de la connexion réseau (Legacy method kept for backward compatibility/defense)
-     * NOTE : NE PAS SUPPRIMER, A MONTRER DURANT LA SOUTENANCE
      * @param context
      * @return
      */
@@ -88,8 +80,7 @@ public class Utils {
         WifiManager wifi = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         return wifi.isWifiEnabled();
     }
-
-    /**
+    /** --------------------------------------------------------------
      * Modern and reliable network connectivity check using ConnectivityManager and NetworkCapabilities.
      * Checks for active internet capability and validation across Wi-Fi, Cellular, or Ethernet.
      * @param context Application or Activity context

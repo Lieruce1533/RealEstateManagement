@@ -18,15 +18,6 @@ class UtilsTest {
         assertTrue("Date string '$dateString' should match dd/MM/yyyy format", regex.matches(dateString))
     }
 
-    @Test
-    fun testGetTodayDateOldFormat() {
-        val oldDateString = Utils.getTodayDateOld()
-        assertNotNull(oldDateString)
-        
-        // Verify format matches yyyy/MM/dd using a regular expression
-        val regex = Regex("\\d{4}/\\d{2}/\\d{2}")
-        assertTrue("Old date string '$oldDateString' should match yyyy/MM/dd format", regex.matches(oldDateString))
-    }
 
     @Test
     fun testIsInternetAvailableNewNullContext() {

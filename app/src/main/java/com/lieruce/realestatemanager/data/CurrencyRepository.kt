@@ -19,7 +19,6 @@ class CurrencyRepository {
         // Target API endpoint for USD to EUR conversion
         private const val API_URL = "https://fxapi.app/api/USD/EUR.json"
     }
-
     /**
      * Fetches the latest USD to EUR conversion rate from the network.
      * Uses Dispatchers.IO to ensure network requests run on a background thread pool,

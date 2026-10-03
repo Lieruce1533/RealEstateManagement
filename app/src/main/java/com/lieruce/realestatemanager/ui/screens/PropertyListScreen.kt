@@ -27,7 +27,6 @@ import coil.compose.AsyncImage
 import com.lieruce.realestatemanager.R
 import com.lieruce.realestatemanager.Utils
 import com.lieruce.realestatemanager.data.model.*
-import com.lieruce.realestatemanager.ui.theme.PurpleGrey80
 import com.lieruce.realestatemanager.ui.theme.RealEstateManagerTheme
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 import java.text.NumberFormat
@@ -41,12 +40,13 @@ import java.util.*
 @Composable
 fun PropertyListScreen(
     viewModel: PropertyViewModel,
+    modifier: Modifier = Modifier,
+    selectedPropertyId: Long? = null,
     onPropertyClick: (Long) -> Unit,
     onAddClick: () -> Unit,
     onMapClick: () -> Unit,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onSettingsClick: () -> Unit
 ) {
     // collectAsStateWithLifecycle connects the ViewModel's Flow to Compose state.
     // Whenever database records change, this list updates and triggers recomposition.
@@ -55,6 +55,7 @@ fun PropertyListScreen(
     // Delegate UI rendering to the stateless content composable so it can be previewed
     PropertyListContent(
         properties = properties,
+        selectedPropertyId = selectedPropertyId,
         formatPrice = { viewModel.formatPrice(it) },
         onPropertyClick = onPropertyClick,
         onAddClick = onAddClick,
@@ -74,6 +75,7 @@ fun PropertyListScreen(
 @Composable
 fun PropertyListContent(
     properties: List<PropertyWithRelations>,
+    selectedPropertyId: Long?,
     formatPrice: (Int) -> String,
     onPropertyClick: (Long) -> Unit,
     onAddClick: () -> Unit,
@@ -153,9 +155,11 @@ fun PropertyListContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(properties) { propertyWithRelations ->
+                    val isSelected = propertyWithRelations.property.id == selectedPropertyId
                     PropertyItem(
                         propertyWithRelations = propertyWithRelations,
                         formattedPrice = formatPrice(propertyWithRelations.property.priceInDollars),
+                        isSelected = isSelected,
                         onClick = { onPropertyClick(propertyWithRelations.property.id) }
                     )
                 }
@@ -167,11 +171,13 @@ fun PropertyListContent(
 /**
  * Card item representing an individual real estate property in the list,
  * displaying its thumbnail image and core details side-by-side in a Row.
+ * Highlights with a distinct background color and border when selected in split-screen mode.
  */
 @Composable
 fun PropertyItem(
     propertyWithRelations: PropertyWithRelations,
     formattedPrice: String,
+    isSelected: Boolean = false,
     onClick: () -> Unit
 ) {
     val property = propertyWithRelations.property
@@ -179,15 +185,27 @@ fun PropertyItem(
     // Grab the URI of the first picture if available, or null otherwise
     val firstPictureUri = propertyWithRelations.pictures.firstOrNull()?.uri
     
+    // Distinct styling when selected in split-screen mode
+    val containerColor = if (isSelected) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val borderStroke = if (isSelected) {
+        BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+    } else {
+        BorderStroke(1.dp, Color.White)
+    }
+    
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor = containerColor,
         ),
-        border = BorderStroke(1.dp, Color.White),
+        border = borderStroke,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 2.dp)
     ) {
         // Row places the thumbnail on the left and property details on the right side-by-side
         Row(
@@ -254,8 +272,28 @@ fun PropertyListContentPreview() {
                     pictures = emptyList(),
                     amenities = listOf(Amenity(id = 1L, name = "Swimming Pool"), Amenity(id = 2L, name = "Gym")),
                     pois = listOf(Poi(id = 1L, name = "Park"), Poi(id = 1L, name = "School"))
+                ),
+                PropertyWithRelations(
+                    property = RealEstateItem(
+                        id = 2L,
+                        type = "Penthouse",
+                        priceInDollars = 950000,
+                        surfaceInSqm = 180,
+                        numberOfRooms = 5,
+                        description = "Luxury downtown penthouse with panoramic views.",
+                        location = PropertyLocation(address = "456 Skyline Ave, Metropolis"),
+                        status = PropertyStatus.SOLD,
+                        entryDate = Instant.now(),
+                        saleDate = Instant.now(),
+                        agentId = 2L
+                    ),
+                    agent = Agent(id = 2L, name = "Agent Jane", email = "jane@realestate.com", phone = "+15558392041"),
+                    pictures = emptyList(),
+                    amenities = listOf(Amenity(id = 3L, name = "Balcony"), Amenity(id = 4L, name = "Terrace")),
+                    pois = listOf(Poi(id = 3L, name = "Subway"), Poi(id = 4L, name = "Mall"))
                 )
             ),
+            selectedPropertyId = 1L,
             formatPrice = { NumberFormat.getCurrencyInstance(Locale.US).format(it) },
             onPropertyClick = {},
             onAddClick = {},
@@ -272,6 +310,7 @@ fun PropertyListEmptyPreview() {
     RealEstateManagerTheme {
         PropertyListContent(
             properties = emptyList(),
+            selectedPropertyId = null,
             formatPrice = { NumberFormat.getCurrencyInstance(Locale.US).format(it) },
             onPropertyClick = {},
             onAddClick = {},

@@ -75,8 +75,13 @@ fun RealEstateNavGraph(
                     }
                 )
             ) {
+                // Extract currently selected property ID from backstack for split-screen selection highlighting
+                val selectedPropertyId = backStack.filterIsInstance<NavKey.PropertyDetail>().lastOrNull()?.propertyId
+                    ?: backStack.filterIsInstance<NavKey.AddEditProperty>().lastOrNull()?.propertyId
+
                 PropertyListScreen(
                     viewModel = viewModel,
+                    selectedPropertyId = selectedPropertyId,
                     onPropertyClick = { id ->
                         val detailKey = NavKey.PropertyDetail(id)
                         // Prevent duplicate entries in backstack
