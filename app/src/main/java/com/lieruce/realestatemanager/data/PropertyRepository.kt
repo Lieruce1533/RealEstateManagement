@@ -12,6 +12,7 @@ class PropertyRepository(private val propertyDao: PropertyDao) {
 
     // Live stream of all properties with their full relations (Agent, Pictures, Amenities, POIs)
     val allProperties: Flow<List<PropertyWithRelations>> = propertyDao.getAllProperties()
+    val allAvailableProperties: Flow<List<PropertyWithRelations>> = propertyDao.getAvailableProperties()
 
     // Live stream of all registered real estate agents
     val allAgents = propertyDao.getAllAgents()

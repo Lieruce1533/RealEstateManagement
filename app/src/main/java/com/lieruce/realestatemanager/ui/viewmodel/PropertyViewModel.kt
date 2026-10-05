@@ -59,6 +59,13 @@ class PropertyViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+    val allAvailableProperties: StateFlow<List<PropertyWithRelations>> = repository.allAvailableProperties
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
 
     /**
      * allAgents is a StateFlow emitting all real estate agents for selection and filtering.

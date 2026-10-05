@@ -50,17 +50,20 @@ data class EditPictureState(
 
 /**
  * AddEditPropertyScreen allows agents to create new real estate properties or edit existing ones,
- * including selecting multiple property photos from gallery or camera, editing descriptions, and saving.
+ * including selecting agent, property photos from gallery or camera, editing descriptions, and saving.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditPropertyScreen(
+    modifier: Modifier = Modifier,
     propertyId: Long? = null,
     viewModel: PropertyViewModel,
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
+
+    // Observe all agents from ViewModel
+    val allAgents by viewModel.allAgents.collectAsStateWithLifecycle()
 
     // Form state variables initialized with defaults or empty values
     var type by remember { mutableStateOf(PropertyConstants.PROPERTY_TYPES.first()) }
@@ -69,6 +72,7 @@ fun AddEditPropertyScreen(
     var rooms by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
+    var selectedAgentId by remember { mutableStateOf<Long?>(null) }
     
     // Using Sets for selected POIs and Amenities to easily toggle multi-select filter chips
     var selectedPois by remember { mutableStateOf(setOf<String>()) }
@@ -79,15 +83,15 @@ fun AddEditPropertyScreen(
     
     var status by remember { mutableStateOf(PropertyStatus.AVAILABLE) }
     
-    // Control state for the property type dropdown menu
+    // Control states for dropdown menus
     var typeExpanded by remember { mutableStateOf(false) }
+    var agentExpanded by remember { mutableStateOf(false) }
 
     // System gallery content multi-selector launcher to pick multiple photos at once
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris ->
         uris.forEach { sourceUri ->
-            // Copy and compress each image into internal app storage via ImageManager
             val internalPath = ImageManager.saveImageToInternalStorage(context, sourceUri)
             if (internalPath != null) {
                 selectedPictures.add(EditPictureState(uri = internalPath, description = ""))
@@ -130,6 +134,13 @@ fun AddEditPropertyScreen(
         remember { mutableStateOf(null) }
     }
 
+    // Default agent selection on creation
+    LaunchedEffect(allAgents) {
+        if (selectedAgentId == null && allAgents.isNotEmpty()) {
+            selectedAgentId = allAgents.first().id
+        }
+    }
+
     // Populate form fields when existing property data is loaded
     LaunchedEffect(existingProperty) {
         existingProperty?.let { p ->
@@ -139,6 +150,7 @@ fun AddEditPropertyScreen(
             rooms = p.property.numberOfRooms.toString()
             description = p.property.description
             address = p.property.location.address
+            selectedAgentId = p.property.agentId
             
             // Convert normalized POIs and amenities lists into Sets of strings for chip selection
             selectedPois = p.pois.map { it.name }.toSet()
@@ -184,7 +196,7 @@ fun AddEditPropertyScreen(
                             else -> null
                         }
 
-                        // Build the RealEstateItem entity
+                        // Build the RealEstateItem entity with selected agent ID
                         val newItem = RealEstateItem(
                             id = propertyId ?: 0L,
                             type = type,
@@ -200,7 +212,7 @@ fun AddEditPropertyScreen(
                             status = status,
                             entryDate = existingProperty?.property?.entryDate ?: Instant.now(),
                             saleDate = calculatedSaleDate,
-                            agentId = existingProperty?.property?.agentId ?: 1L // Default to Agent Smith (id = 1)
+                            agentId = selectedAgentId ?: (allAgents.firstOrNull()?.id ?: 1L)
                         )
                         
                         // Map selected pictures and descriptions into PropertyPicture entities
@@ -261,15 +273,13 @@ fun AddEditPropertyScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
+                            Spacer(modifier = Modifier.width(1.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                // Gallery picker button
                                 OutlinedButton(onClick = { galleryLauncher.launch("image/*") }) {
                                     Icon(Icons.Default.Add, contentDescription = "Gallery")
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text("Gallery")
                                 }
-                                // Camera capture button
                                 Button(onClick = {
                                     val permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
                                     if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
@@ -299,21 +309,19 @@ fun AddEditPropertyScreen(
                                 }
                             }
                         } else {
-                            // Horizontal scroll row showing selected photo thumbnails with description fields and delete buttons
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .horizontalScroll(rememberScrollState()),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // Leading spacer to prevent the first card's border stroke from being clipped against the edge
                                 Spacer(modifier = Modifier.width(4.dp))
 
                                 selectedPictures.forEachIndexed { index, item ->
                                     Card(
                                         modifier = Modifier.width(160.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                                     ) {
                                         Column(modifier = Modifier.padding(8.dp)) {
                                             Box(modifier = Modifier.size(144.dp, 100.dp)) {
@@ -324,7 +332,6 @@ fun AddEditPropertyScreen(
                                                         .fillMaxSize()
                                                         .clip(RoundedCornerShape(8.dp))
                                                 )
-                                                // Delete button overlay
                                                 IconButton(
                                                     onClick = { selectedPictures.removeAt(index) },
                                                     modifier = Modifier
@@ -341,7 +348,6 @@ fun AddEditPropertyScreen(
                                                 }
                                             }
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            // Input field to add or edit picture description caption
                                             OutlinedTextField(
                                                 value = item.description,
                                                 onValueChange = { newDesc ->
@@ -404,6 +410,61 @@ fun AddEditPropertyScreen(
                                         onClick = {
                                             type = option
                                             typeExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Assigned Agent Selection Dropdown inside Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Assigned Agent",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        val currentAgentName = allAgents.find { it.id == selectedAgentId }?.name ?: "Select Agent"
+
+                        ExposedDropdownMenuBox(
+                            expanded = agentExpanded,
+                            onExpandedChange = { agentExpanded = !agentExpanded },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = currentAgentName,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Agent") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = agentExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = agentExpanded,
+                                onDismissRequest = { agentExpanded = false }
+                            ) {
+                                allAgents.forEach { agent ->
+                                    DropdownMenuItem(
+                                        text = { Text(agent.name) },
+                                        onClick = {
+                                            selectedAgentId = agent.id
+                                            agentExpanded = false
                                         }
                                     )
                                 }

@@ -16,6 +16,14 @@ interface PropertyDao {
     @Query("SELECT * FROM real_estate_items")
     fun getAllProperties(): Flow<List<PropertyWithRelations>>
 
+    /**
+     * Retrieves a live stream of all available real estate properties.
+     */
+    @Transaction
+    @Query("SELECT * FROM real_estate_items WHERE status = 'AVAILABLE'")
+    fun getAvailableProperties(): Flow<List<PropertyWithRelations>>
+
+
     @Transaction
     @Query("SELECT * FROM real_estate_items WHERE id = :propertyId")
     fun getPropertyById(propertyId: Long): Flow<PropertyWithRelations?>

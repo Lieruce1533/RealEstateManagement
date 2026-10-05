@@ -50,7 +50,7 @@ fun PropertyListScreen(
 ) {
     // collectAsStateWithLifecycle connects the ViewModel's Flow to Compose state.
     // Whenever database records change, this list updates and triggers recomposition.
-    val properties by viewModel.allProperties.collectAsStateWithLifecycle()
+    val properties by viewModel.allAvailableProperties.collectAsStateWithLifecycle()
 
     // Delegate UI rendering to the stateless content composable so it can be previewed
     PropertyListContent(
