@@ -3,6 +3,7 @@ package com.lieruce.realestatemanager.ui.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +39,7 @@ import com.lieruce.realestatemanager.data.model.RealEstateItem
 import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
 import com.lieruce.realestatemanager.util.CameraManager
 import com.lieruce.realestatemanager.util.ImageManager
+import com.lieruce.realestatemanager.util.NotificationHelper
 import java.time.Instant
 
 /**
@@ -124,6 +126,20 @@ fun AddEditPropertyScreen(
             cameraLauncher.launch(uri)
         } else {
             Toast.makeText(context, "Camera permission is required to take photos", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Notification runtime permission launcher (Android 13+)
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {}
+
+    // Request notification permission on first composition on Android 13+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
@@ -231,9 +247,10 @@ fun AddEditPropertyScreen(
                             poiNames = selectedPois.toList()
                         )
                         
-                        // Show success Toast message
-                        val toastMessage = if (propertyId == null) "New property successfully created!" else "Property updated successfully!"
-                        Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+                        // Post Android system notification
+                        val notifTitle = if (propertyId == null) "New Property Created" else "Property Updated"
+                        val notifMsg = "${newItem.type} in ${address.ifBlank { "New York" }} successfully saved."
+                        NotificationHelper.sendPropertyNotification(context, notifTitle, notifMsg)
 
                         onBackClick()
                     }) {
