@@ -4,6 +4,7 @@ import androidx.room.*
 import android.database.Cursor
 import com.lieruce.realestatemanager.data.model.*
 import kotlinx.coroutines.flow.Flow
+import java.time.Instant
 
 /**
  * Data Access Object (DAO) providing structured SQL operations for properties,
@@ -22,6 +23,53 @@ interface PropertyDao {
     @Transaction
     @Query("SELECT * FROM real_estate_items WHERE status = 'AVAILABLE'")
     fun getAvailableProperties(): Flow<List<PropertyWithRelations>>
+
+    /**
+     * Executes a comprehensive multi-criteria SQL query filtering properties by type, status, agent,
+     * price range, surface area range, address location query, creation date cutoff, required amenities, and required POIs.
+     */
+    @Transaction
+    @Query("""
+        SELECT * FROM real_estate_items 
+        WHERE (:type IS NULL OR type = :type)
+          AND (:status IS NULL OR status = :status)
+          AND (:agentId IS NULL OR agentId = :agentId)
+          AND (:minPrice IS NULL OR priceInDollars >= :minPrice)
+          AND (:maxPrice IS NULL OR priceInDollars <= :maxPrice)
+          AND (:minSurface IS NULL OR surfaceInSqm >= :minSurface)
+          AND (:maxSurface IS NULL OR surfaceInSqm <= :maxSurface)
+          AND (:areaQuery IS NULL OR LOWER(address) LIKE '%' || LOWER(:areaQuery) || '%')
+          AND (:minEntryDate IS NULL OR entryDate >= :minEntryDate)
+          AND (:amenityCount = 0 OR id IN (
+              SELECT propertyId FROM property_amenities 
+              INNER JOIN amenities ON property_amenities.amenityId = amenities.id 
+              WHERE amenities.name IN (:amenityNames) 
+              GROUP BY propertyId 
+              HAVING COUNT(DISTINCT amenities.name) = :amenityCount
+          ))
+          AND (:poiCount = 0 OR id IN (
+              SELECT propertyId FROM property_pois 
+              INNER JOIN pois ON property_pois.poiId = pois.id 
+              WHERE pois.name IN (:poiNames) 
+              GROUP BY propertyId 
+              HAVING COUNT(DISTINCT pois.name) = :poiCount
+          ))
+    """)
+    fun filterProperties(
+        type: String? = null,
+        status: PropertyStatus? = null,
+        agentId: Long? = null,
+        minPrice: Int? = null,
+        maxPrice: Int? = null,
+        minSurface: Int? = null,
+        maxSurface: Int? = null,
+        areaQuery: String? = null,
+        minEntryDate: Instant? = null,
+        amenityNames: List<String> = emptyList(),
+        amenityCount: Int = amenityNames.size,
+        poiNames: List<String> = emptyList(),
+        poiCount: Int = poiNames.size
+    ): Flow<List<PropertyWithRelations>>
 
 
     @Transaction

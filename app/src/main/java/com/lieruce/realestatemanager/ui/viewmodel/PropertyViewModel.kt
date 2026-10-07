@@ -17,8 +17,11 @@ import com.lieruce.realestatemanager.data.model.PropertyStatus
 import com.lieruce.realestatemanager.data.model.PropertyWithRelations
 import com.lieruce.realestatemanager.data.model.RealEstateItem
 import com.lieruce.realestatemanager.ui.navigation.NavKey
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -34,6 +37,23 @@ enum class DateFilterOption(val label: String) {
     PAST_MONTH("Past Month"),
     PAST_3_MONTHS("Past 3 Months")
 }
+
+/**
+ * Data container holding active applied search filter parameters for Room SQL query execution.
+ */
+data class SearchFilterParams(
+    val type: String? = null,
+    val status: PropertyStatus? = null,
+    val agentId: Long? = null,
+    val minPrice: Int? = null,
+    val maxPrice: Int? = null,
+    val minSurface: Int? = null,
+    val maxSurface: Int? = null,
+    val areaQuery: String? = null,
+    val minEntryDate: Instant? = null,
+    val amenityNames: List<String> = emptyList(),
+    val poiNames: List<String> = emptyList()
+)
 
 /**
  * PropertyViewModel acts as the bridge between the Data Layer (Repository) and the UI (Compose).
@@ -59,13 +79,16 @@ class PropertyViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    /**
+     * allAvailableProperties is a StateFlow emitting only available real estate properties.
+     */
     val allAvailableProperties: StateFlow<List<PropertyWithRelations>> = repository.allAvailableProperties
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-
 
     /**
      * allAgents is a StateFlow emitting all real estate agents for selection and filtering.
@@ -96,7 +119,7 @@ class PropertyViewModel(
     }
 
     // ============================================================================
-    // SEARCH & FILTER STATES
+    // SEARCH & FILTER DRAFT STATES & SQL SEARCH RESULTS
     // ============================================================================
     var searchType by mutableStateOf<String?>(null)
     var searchMinPrice by mutableStateOf("")
@@ -111,76 +134,60 @@ class PropertyViewModel(
     val searchAmenities = mutableStateListOf<String>()
     val searchPois = mutableStateListOf<String>()
 
+    // Active applied search filter parameters
+    private val _appliedFilterParams = MutableStateFlow(SearchFilterParams())
+
     /**
-     * Computes and returns properties matching the current search & filter criteria.
+     * Reactive stream of filtered properties executed directly via Room DAO SQL query.
      */
-    fun getFilteredProperties(list: List<PropertyWithRelations>): List<PropertyWithRelations> {
-        return list.filter { item ->
-            val prop = item.property
-
-            // Filter by Property Type
-            if (searchType != null && prop.type != searchType) return@filter false
-
-
-            // Filter by Agent
-            if (searchAgentId != null && prop.agentId != searchAgentId) return@filter false
-
-            // Filter by Area / Neighborhood query (matching address)
-            if (searchAreaQuery.isNotBlank() && !prop.location.address.contains(searchAreaQuery, ignoreCase = true)) {
-                return@filter false
-            }
-
-            // Filter by Date of Creation / Entry Date
-            val now = Instant.now()
-            val cutoffInstant = when (searchDateFilter) {
-                DateFilterOption.ANY -> null
-                DateFilterOption.PAST_2_WEEKS -> now.minusSeconds(86400L * 14)
-                DateFilterOption.PAST_MONTH -> now.minusSeconds(86400L * 30)
-                DateFilterOption.PAST_3_MONTHS -> now.minusSeconds(86400L * 90)
-            }
-            if (cutoffInstant != null && prop.entryDate.isBefore(cutoffInstant)) {
-                return@filter false
-            }
-
-            // Filter by Minimum Number of Pictures
-            val minPics = searchMinPictures.toIntOrNull()
-            if (minPics != null && item.pictures.size < minPics) {
-                return@filter false
-            }
-
-            // Filter by Min Price
-            val minP = searchMinPrice.toIntOrNull()
-            if (minP != null && prop.priceInDollars < minP) return@filter false
-
-            // Filter by Max Price
-            val maxP = searchMaxPrice.toIntOrNull()
-            if (maxP != null && prop.priceInDollars > maxP) return@filter false
-
-            // Filter by Min Surface
-            val minS = searchMinSurface.toIntOrNull()
-            if (minS != null && prop.surfaceInSqm < minS) return@filter false
-
-            // Filter by Max Surface
-            val maxS = searchMaxSurface.toIntOrNull()
-            if (maxS != null && prop.surfaceInSqm > maxS) return@filter false
-
-            // Filter by Status
-            if (searchStatus != null && prop.status != searchStatus) return@filter false
-
-            // Filter by Amenities (must contain all selected amenities)
-            if (searchAmenities.isNotEmpty()) {
-                val propertyAmenityNames = item.amenities.map { it.name }
-                if (!propertyAmenityNames.containsAll(searchAmenities)) return@filter false
-            }
-
-            // Filter by Points of Interest (must contain all selected POIs)
-            if (searchPois.isNotEmpty()) {
-                val propertyPoiNames = item.pois.map { it.name }
-                if (!propertyPoiNames.containsAll(searchPois)) return@filter false
-            }
-
-            true
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val searchResults: StateFlow<List<PropertyWithRelations>> = _appliedFilterParams
+        .flatMapLatest { params ->
+            repository.filterProperties(
+                type = params.type,
+                status = params.status,
+                agentId = params.agentId,
+                minPrice = params.minPrice,
+                maxPrice = params.maxPrice,
+                minSurface = params.minSurface,
+                maxSurface = params.maxSurface,
+                areaQuery = params.areaQuery?.takeIf { it.isNotBlank() },
+                minEntryDate = params.minEntryDate,
+                amenityNames = params.amenityNames,
+                poiNames = params.poiNames
+            )
         }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    /**
+     * Applies current draft search filters and executes the Room SQL query.
+     */
+    fun applySearchFilters() {
+        val now = Instant.now()
+        val cutoffInstant = when (searchDateFilter) {
+            DateFilterOption.ANY -> null
+            DateFilterOption.PAST_2_WEEKS -> now.minusSeconds(86400L * 14)
+            DateFilterOption.PAST_MONTH -> now.minusSeconds(86400L * 30)
+            DateFilterOption.PAST_3_MONTHS -> now.minusSeconds(86400L * 90)
+        }
+
+        _appliedFilterParams.value = SearchFilterParams(
+            type = searchType,
+            status = searchStatus,
+            agentId = searchAgentId,
+            minPrice = searchMinPrice.toIntOrNull(),
+            maxPrice = searchMaxPrice.toIntOrNull(),
+            minSurface = searchMinSurface.toIntOrNull(),
+            maxSurface = searchMaxSurface.toIntOrNull(),
+            areaQuery = searchAreaQuery,
+            minEntryDate = cutoffInstant,
+            amenityNames = searchAmenities.toList(),
+            poiNames = searchPois.toList()
+        )
     }
 
     /**
@@ -199,6 +206,7 @@ class PropertyViewModel(
         searchMinPictures = ""
         searchAmenities.clear()
         searchPois.clear()
+        _appliedFilterParams.value = SearchFilterParams()
     }
 
     /**

@@ -18,6 +18,37 @@ class PropertyRepository(private val propertyDao: PropertyDao) {
     val allAgents = propertyDao.getAllAgents()
 
     /**
+     * Queries Room database using multi-criteria SQL constraints.
+     */
+    fun filterProperties(
+        type: String? = null,
+        status: PropertyStatus? = null,
+        agentId: Long? = null,
+        minPrice: Int? = null,
+        maxPrice: Int? = null,
+        minSurface: Int? = null,
+        maxSurface: Int? = null,
+        areaQuery: String? = null,
+        minEntryDate: java.time.Instant? = null,
+        amenityNames: List<String> = emptyList(),
+        poiNames: List<String> = emptyList()
+    ): Flow<List<PropertyWithRelations>> {
+        return propertyDao.filterProperties(
+            type = type,
+            status = status,
+            agentId = agentId,
+            minPrice = minPrice,
+            maxPrice = maxPrice,
+            minSurface = minSurface,
+            maxSurface = maxSurface,
+            areaQuery = areaQuery,
+            minEntryDate = minEntryDate,
+            amenityNames = amenityNames,
+            poiNames = poiNames
+        )
+    }
+
+    /**
      * Fetches a single property and its relations by ID.
      */
     fun getPropertyById(id: Long): Flow<PropertyWithRelations?> {
