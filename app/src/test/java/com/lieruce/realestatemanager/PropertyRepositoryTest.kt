@@ -19,6 +19,40 @@ class FakePropertyDao : PropertyDao {
     private val agents = mutableListOf<Agent>()
 
     override fun getAllProperties(): Flow<List<PropertyWithRelations>> = flowOf(properties)
+    override fun getAvailableProperties(): Flow<List<PropertyWithRelations>> =
+        flowOf(properties.filter { it.property.status == PropertyStatus.AVAILABLE })
+
+    override fun filterProperties(
+        type: String?,
+        status: PropertyStatus?,
+        agentId: Long?,
+        minPrice: Int?,
+        maxPrice: Int?,
+        minSurface: Int?,
+        maxSurface: Int?,
+        areaQuery: String?,
+        minEntryDate: Instant?,
+        amenityNames: List<String>,
+        amenityCount: Int,
+        poiNames: List<String>,
+        poiCount: Int
+    ): Flow<List<PropertyWithRelations>> {
+        val filtered = properties.filter { item ->
+            val prop = item.property
+            if (type != null && prop.type != type) return@filter false
+            if (status != null && prop.status != status) return@filter false
+            if (agentId != null && prop.agentId != agentId) return@filter false
+            if (minPrice != null && prop.priceInDollars < minPrice) return@filter false
+            if (maxPrice != null && prop.priceInDollars > maxPrice) return@filter false
+            if (minSurface != null && prop.surfaceInSqm < minSurface) return@filter false
+            if (maxSurface != null && prop.surfaceInSqm > maxSurface) return@filter false
+            if (!areaQuery.isNullOrBlank() && !prop.location.address.contains(areaQuery, ignoreCase = true)) return@filter false
+            if (minEntryDate != null && prop.entryDate.isBefore(minEntryDate)) return@filter false
+            true
+        }
+        return flowOf(filtered)
+    }
+
     override fun getPropertyById(propertyId: Long): Flow<PropertyWithRelations?> = flowOf(properties.find { it.property.id == propertyId })
     
     override suspend fun insertProperty(property: RealEstateItem): Long {

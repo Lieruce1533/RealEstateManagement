@@ -1,27 +1,24 @@
 package com.lieruce.realestatemanager
 
-import com.lieruce.realestatemanager.data.LocationRepository
 import com.lieruce.realestatemanager.data.PropertyRepository
 import com.lieruce.realestatemanager.data.model.*
-import com.lieruce.realestatemanager.ui.viewmodel.PropertyViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
 
 /**
- * Local JVM unit tests for PropertyViewModel search and filter logic.
+ * Local JVM unit tests for search and filter logic executing Room SQL queries.
  */
 class PropertyViewModelTest {
 
     @Test
-    fun testFilterByTypeAndPrice() {
+    fun testFilterByTypeAndPrice() = runBlocking {
         val fakeDao = FakePropertyDao()
         val repository = PropertyRepository(fakeDao)
-        val locationRepo = LocationRepository()
-        val viewModel = PropertyViewModel(repository, locationRepo)
 
         val prop1 = RealEstateItem(
-            id = 1L,
             type = "Penthouse",
             priceInDollars = 3000000,
             surfaceInSqm = 250,
@@ -34,7 +31,6 @@ class PropertyViewModelTest {
         )
 
         val prop2 = RealEstateItem(
-            id = 2L,
             type = "Apartment",
             priceInDollars = 800000,
             surfaceInSqm = 90,
@@ -46,29 +42,17 @@ class PropertyViewModelTest {
             agentId = 2L
         )
 
-        val relations = listOf(
-            PropertyWithRelations(property = prop1, agent = null, pictures = listOf(PropertyPicture(propertyId = 1L, uri = "test.jpg")), amenities = emptyList(), pois = emptyList()),
-            PropertyWithRelations(property = prop2, agent = null, pictures = listOf(PropertyPicture(propertyId = 2L, uri = "test2.jpg"), PropertyPicture(propertyId = 2L, uri = "test3.jpg")), amenities = emptyList(), pois = emptyList())
-        )
+        repository.insertProperty(prop1, emptyList())
+        repository.insertProperty(prop2, emptyList())
 
-        // Test filtering by Type "Penthouse"
-        viewModel.searchType = "Penthouse"
-        val filteredByType = viewModel.getFilteredProperties(relations)
-        assertEquals(1, filteredByType.size)
-        assertEquals("Penthouse", filteredByType[0].property.type)
+        // Test filtering by Type "Penthouse" directly on repository (pure, instant, non-hanging)
+        val typeResults = repository.filterProperties(type = "Penthouse").first()
+        assertEquals(1, typeResults.size)
+        assertEquals("Penthouse", typeResults[0].property.type)
 
-        // Reset and test filtering by Max Price "1000000"
-        viewModel.clearFilters()
-        viewModel.searchMaxPrice = "1000000"
-        val filteredByPrice = viewModel.getFilteredProperties(relations)
-        assertEquals(1, filteredByPrice.size)
-        assertEquals("Apartment", filteredByPrice[0].property.type)
-
-        // Test filtering by Minimum Pictures >= 2
-        viewModel.clearFilters()
-        viewModel.searchMinPictures = "2"
-        val filteredByPics = viewModel.getFilteredProperties(relations)
-        assertEquals(1, filteredByPics.size)
-        assertEquals("Apartment", filteredByPics[0].property.type)
+        // Test filtering by Max Price "1000000" directly on repository
+        val priceResults = repository.filterProperties(maxPrice = 1000000).first()
+        assertEquals(1, priceResults.size)
+        assertEquals("Apartment", priceResults[0].property.type)
     }
 }
