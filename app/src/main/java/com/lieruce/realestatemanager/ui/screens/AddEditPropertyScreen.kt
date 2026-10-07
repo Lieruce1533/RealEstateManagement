@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -82,6 +83,7 @@ fun AddEditPropertyScreen(
     
     // State list holding editable picture states (URI + description caption)
     val selectedPictures = remember { mutableStateListOf<EditPictureState>() }
+    var mainPhotoIndex by remember { mutableIntStateOf(0) }
     
     var status by remember { mutableStateOf(PropertyStatus.AVAILABLE) }
     
@@ -231,8 +233,17 @@ fun AddEditPropertyScreen(
                             agentId = selectedAgentId ?: (allAgents.firstOrNull()?.id ?: 1L)
                         )
                         
+                        // Reorder pictures so the selected main photo is placed at index 0 (used for list thumbnail)
+                        val orderedPictures = if (selectedPictures.isNotEmpty() && mainPhotoIndex in selectedPictures.indices) {
+                            val mainPhoto = selectedPictures[mainPhotoIndex]
+                            val otherPhotos = selectedPictures.filterIndexed { i, _ -> i != mainPhotoIndex }
+                            listOf(mainPhoto) + otherPhotos
+                        } else {
+                            selectedPictures.toList()
+                        }
+
                         // Map selected pictures and descriptions into PropertyPicture entities
-                        val picturesList = selectedPictures.map { item ->
+                        val picturesList = orderedPictures.map { item ->
                             PropertyPicture(
                                 propertyId = propertyId ?: 0L,
                                 uri = item.uri,
@@ -349,8 +360,33 @@ fun AddEditPropertyScreen(
                                                         .fillMaxSize()
                                                         .clip(RoundedCornerShape(8.dp))
                                                 )
+                                                // Main photo star toggle button overlay in top-left
+                                                val isMain = (index == mainPhotoIndex)
                                                 IconButton(
-                                                    onClick = { selectedPictures.removeAt(index) },
+                                                    onClick = { mainPhotoIndex = index },
+                                                    modifier = Modifier
+                                                        .align(Alignment.TopStart)
+                                                        .size(28.dp)
+                                                        .background(
+                                                            if (isMain) Color(0xFFFFC107) else Color.Black.copy(alpha = 0.5f),
+                                                            RoundedCornerShape(14.dp)
+                                                        )
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Star,
+                                                        contentDescription = if (isMain) "Main Photo" else "Set as Main Photo",
+                                                        tint = if (isMain) Color.Black else Color.White,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                                // Delete button overlay in top-right
+                                                IconButton(
+                                                    onClick = { 
+                                                        selectedPictures.removeAt(index)
+                                                        if (mainPhotoIndex >= selectedPictures.size) {
+                                                            mainPhotoIndex = 0
+                                                        }
+                                                    },
                                                     modifier = Modifier
                                                         .align(Alignment.TopEnd)
                                                         .size(28.dp)
@@ -362,6 +398,23 @@ fun AddEditPropertyScreen(
                                                         tint = Color.White,
                                                         modifier = Modifier.size(16.dp)
                                                     )
+                                                }
+                                                // Main photo text badge overlay in bottom-left
+                                                if (isMain) {
+                                                    Surface(
+                                                        color = Color(0xFFFFC107),
+                                                        shape = RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp),
+                                                        modifier = Modifier
+                                                            .align(Alignment.BottomStart)
+                                                            .padding(bottom = 4.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = "Main",
+                                                            color = Color.Black,
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                        )
+                                                    }
                                                 }
                                             }
                                             Spacer(modifier = Modifier.height(8.dp))
